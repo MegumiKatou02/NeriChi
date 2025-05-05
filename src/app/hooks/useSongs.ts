@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Language, Song, SearchResult } from '../types';
-import { addSong, getSongById, getSongs, saveSong, searchSongs } from '../firebase/services';
+import { addSong, getSongById, getSongs, saveSong, searchSongs, getTopSongs } from '../firebase/services';
 import { useAuth } from './useAuth';
 
 export function useSongs() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const [topSongs, setTopSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const { user } = useAuth();
@@ -95,14 +96,31 @@ export function useSongs() {
     }
   }, [user]);
 
+  const fetchTopSongs = useCallback(async (sortBy: 'views' | 'likes' = 'views', limit_count = 20) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const songsData = await getTopSongs(sortBy, limit_count);
+      setTopSongs(songsData);
+      return songsData;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     songs,
     currentSong,
     searchResults,
+    topSongs,
     loading,
     error,
     fetchSongs,
     fetchSongById,
+    fetchTopSongs,
     search,
     createSong,
     saveFavoriteSong

@@ -7,6 +7,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  setDoc,
   query,
   where,
   orderBy,
@@ -140,7 +141,7 @@ export const saveSong = async (songId: string) => {
       });
     }
   } else {
-    return updateDoc(userPrefsRef, {
+    return setDoc(userPrefsRef, {
       userId: user.uid,
       savedSongs: [songId],
       history: []
@@ -166,4 +167,22 @@ export const getSavedSongs = async () => {
   }
   
   return songs;
+};
+
+export const getTopSongs = async (sortBy: 'views' | 'likes' = 'views', limit_count = 20) => {
+  const songsRef = collection(db, 'songs');
+  const q = query(
+    songsRef,
+    where('approved', '==', true),
+    orderBy(sortBy, 'desc'),
+    limit(limit_count)
+  );
+  
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: doc.data().createdAt?.toDate(),
+    updatedAt: doc.data().updatedAt?.toDate(),
+  } as Song));
 }; 
