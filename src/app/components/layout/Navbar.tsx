@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { FiSun, FiMoon, FiMenu, FiX, FiSearch, FiUser, FiHeart, FiLogOut, FiPlus, FiHome, FiMusic, FiBarChart2 } from 'react-icons/fi';
 import { useUIStore } from '../../store/store';
+import Image from 'next/image';
 
 export default function Navbar() {
   const router = useRouter();
@@ -163,9 +164,11 @@ export default function Navbar() {
                 >
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     {user.photoURL ? (
-                      <img
+                      <Image
                         src={user.photoURL}
                         alt={user.displayName || 'User'}
+                        width={32}
+                        height={32}
                         className="h-8 w-8 rounded-full object-cover"
                       />
                     ) : (

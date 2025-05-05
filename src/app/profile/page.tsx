@@ -9,6 +9,7 @@ import { useTheme } from '../hooks/useTheme';
 import { FiUser, FiMail, FiCalendar, FiLock, FiLogOut, FiMoon, FiSun } from 'react-icons/fi';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import Image from 'next/image'
 
 export default function ProfilePage() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -114,9 +115,14 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-8">
           <div className="px-4 py-5 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center">
-              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 sm:mb-0 sm:mr-6">
+              <div className="relative w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 sm:mb-0 sm:mr-6">
                 {user.photoURL ? (
-                  <img src={user.photoURL} alt={user.displayName} className="w-full h-full rounded-full" />
+                  <Image
+                    src={user.photoURL}
+                    alt={user.displayName || 'User Avatar'}
+                    fill
+                    className="rounded-full object-cover"
+                  />
                 ) : (
                   <FiUser size={36} />
                 )}

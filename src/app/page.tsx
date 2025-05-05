@@ -11,7 +11,7 @@ import { Language } from './types';
 
 export default function Home() {
   const router = useRouter();
-  const { fetchSongs, songs, loading } = useSongs();
+  const { fetchSongs, songs } = useSongs();
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
