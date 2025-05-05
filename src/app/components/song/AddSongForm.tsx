@@ -51,7 +51,7 @@ export default function AddSongForm() {
         lyrics,
         language,
         contributors: [],
-        approved: false,
+        approved: true,
       });
       setSuccess(true);
       setTitle('');

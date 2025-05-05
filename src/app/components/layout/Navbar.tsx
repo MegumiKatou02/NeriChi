@@ -83,7 +83,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                LyricsHub
+                NeriChi
               </span>
             </Link>
           </div>
