@@ -8,17 +8,24 @@ import SearchBox from '@/app/components/ui/SearchBox';
 import { useSongs } from '@/app/hooks/useSongs';
 import { Language } from '@/app/types';
 import { FiFilter, FiChevronDown } from 'react-icons/fi';
+import { useSongStore } from '@/app/store/store';
 
 export default function SongsPage() {
   const searchParams = useSearchParams();
   const languageParam = searchParams?.get('language') as Language | null;
   const { fetchSongs, songs } = useSongs();
-  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(languageParam);
+  const { selectedLanguage, setSelectedLanguage } = useSongStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     fetchSongs();
   }, [fetchSongs]);
+
+  useEffect(() => {
+    if (languageParam) {
+      setSelectedLanguage(languageParam);
+    }
+  }, [languageParam, setSelectedLanguage]);
 
   const filteredSongs = selectedLanguage
     ? songs.filter((song) => song.language === selectedLanguage)
@@ -34,6 +41,8 @@ export default function SongsPage() {
         return 'Tiếng Hàn';
       case Language.JAPANESE:
         return 'Tiếng Nhật';
+      case Language.ROMAJI:
+        return 'Tiếng Nhật (Romaji)';
       case Language.CHINESE:
         return 'Tiếng Trung';
       case Language.OTHER:
@@ -56,7 +65,7 @@ export default function SongsPage() {
               className="flex items-center text-gray-600 dark:text-gray-300 hover:text-primary"
             >
               <FiFilter className="mr-2" />
-              <span>Lọc theo</span>
+                <span>Lọc theo</span>
               <FiChevronDown className={`ml-1 transition-transform ${isFilterOpen ? 'transform rotate-180' : ''}`} />
             </button>
 

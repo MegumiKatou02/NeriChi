@@ -110,6 +110,7 @@ export default function SearchBox({ initialQuery = '', onlyShowResults = false, 
               <option value={Language.ENGLISH}>Tiếng Anh</option>
               <option value={Language.KOREAN}>Tiếng Hàn</option>
               <option value={Language.JAPANESE}>Tiếng Nhật</option>
+              <option value={Language.ROMAJI}>Tiếng Nhật (Romaji)</option>
               <option value={Language.CHINESE}>Tiếng Trung</option>
               <option value={Language.OTHER}>Khác</option>
             </select>

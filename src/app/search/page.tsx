@@ -15,7 +15,7 @@ export default function SearchPage() {
   const query = searchParams?.get('q') || '';
   const languageParam = searchParams?.get('language') as Language | null;
   const { search, searchResults, loading } = useSongs();
-  const { setSearchTerm, setSelectedLanguage } = useSongStore();
+  const { setSearchTerm, selectedLanguage, setSelectedLanguage } = useSongStore();
 
   useEffect(() => {
     if (query) {
@@ -23,9 +23,14 @@ export default function SearchPage() {
       if (languageParam) {
         setSelectedLanguage(languageParam);
       }
-      search(query, languageParam || undefined);
     }
-  }, [query, languageParam, search, setSearchTerm, setSelectedLanguage]);
+  }, [query, languageParam, setSearchTerm, setSelectedLanguage]);
+
+  useEffect(() => {
+    if (query) {
+      search(query, selectedLanguage || undefined);
+    }
+  }, [query, selectedLanguage, search]);
 
   const getLanguageDisplay = (lang: Language): string => {
     switch(lang) {
@@ -37,6 +42,8 @@ export default function SearchPage() {
         return 'Tiếng Hàn';
       case Language.JAPANESE:
         return 'Tiếng Nhật';
+      case Language.ROMAJI:
+        return 'Tiếng Nhật (Romaji)';
       case Language.CHINESE:
         return 'Tiếng Trung';
       case Language.OTHER:
@@ -69,7 +76,7 @@ export default function SearchPage() {
                   </h2>
                   <p className="text-gray-500 dark:text-gray-400 mt-1">
                     Tìm thấy {searchResults.songs.length} kết quả{' '}
-                    {languageParam && `cho ngôn ngữ: ${getLanguageDisplay(languageParam)}`}
+                    {selectedLanguage && `cho ngôn ngữ: ${getLanguageDisplay(selectedLanguage)}`}
                   </p>
                 </div>
                 <SongList initialSongs={searchResults.songs} title="" />
