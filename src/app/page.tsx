@@ -1,10 +1,160 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import MainLayout from './components/layout/MainLayout';
+// import SearchBox from './components/ui/SearchBox';
+import SongList from '@/app/components/song/SongList';
+import { useSongs } from '@/app/hooks/useSongs'
+import { FiMusic, FiSearch, FiHeart, FiGlobe } from 'react-icons/fi';
+import { Language } from './types';
+
 export default function Home() {
+  const router = useRouter();
+  const { fetchSongs, songs, loading } = useSongs();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchSongs();
+  }, [fetchSongs]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-4xl font-bold underline">
-        Hello Tailwind CSS!
-      </h1>
-      <h2 className="heading">Heading</h2>
-    </main>
-  )
+    <MainLayout>
+      {/* Hero section */}
+      <section className="pt-10 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/10 to-transparent">
+        <div className="max-w-5xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            Khám phá lời bài hát yêu thích của bạn
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto">
+            Tìm kiếm, lưu trữ và chia sẻ lời bài hát từ hàng ngàn bài hát Việt Nam và quốc tế.
+          </p>
+
+          {/* Search box */}
+          <div className="max-w-2xl mx-auto">
+            <form onSubmit={handleSearch} className="flex">
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiSearch className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  className="py-3 pl-10 pr-4 w-full shadow-sm focus:ring-primary focus:border-primary block border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="Tên bài hát, ca sĩ hoặc một phần lời..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button
+                type="submit"
+                className="py-3 px-6 border border-transparent rounded-r-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              >
+                Tìm kiếm
+              </button>
+            </form>
+          </div>
+
+          {/* Features */}
+          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex justify-center items-center h-12 w-12 rounded-md bg-primary/10 text-primary mx-auto mb-4">
+                <FiSearch size={24} />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Tìm kiếm nhanh chóng</h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Tìm kiếm lời bài hát trong vài giây với kết quả chính xác.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex justify-center items-center h-12 w-12 rounded-md bg-primary/10 text-primary mx-auto mb-4">
+                <FiHeart size={24} />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Lưu bài hát yêu thích</h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Lưu lại những bài hát bạn yêu thích để xem lại bất cứ lúc nào.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex justify-center items-center h-12 w-12 rounded-md bg-primary/10 text-primary mx-auto mb-4">
+                <FiGlobe size={24} />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Đa dạng ngôn ngữ</h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Hỗ trợ nhiều ngôn ngữ bài hát từ Việt, Anh, Hàn, Nhật và nhiều hơn nữa.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Popular songs */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <SongList title="Bài hát phổ biến" initialSongs={songs} />
+        </div>
+      </section>
+
+      {/* Categories by language */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900/50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-10 text-center">
+            Khám phá theo ngôn ngữ
+          </h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {Object.values(Language).map((lang) => (
+              <div
+                key={lang}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => router.push(`/songs?language=${lang}`)}
+              >
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2 flex items-center">
+                  <FiMusic className="mr-2 text-primary" />
+                  {lang === Language.VIETNAMESE && 'Tiếng Việt'}
+                  {lang === Language.ENGLISH && 'Tiếng Anh'}
+                  {lang === Language.KOREAN && 'Tiếng Hàn'}
+                  {lang === Language.JAPANESE && 'Tiếng Nhật'}
+                  {lang === Language.CHINESE && 'Tiếng Trung'}
+                  {lang === Language.OTHER && 'Ngôn ngữ khác'}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Khám phá các bài hát{' '}
+                  {lang === Language.VIETNAMESE && 'tiếng Việt'}
+                  {lang === Language.ENGLISH && 'tiếng Anh'}
+                  {lang === Language.KOREAN && 'tiếng Hàn (K-Pop)'}
+                  {lang === Language.JAPANESE && 'tiếng Nhật (J-Pop)'}
+                  {lang === Language.CHINESE && 'tiếng Trung (C-Pop)'}
+                  {lang === Language.OTHER && 'nhiều ngôn ngữ khác'}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* User contribution */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-primary/10 dark:bg-primary/5 rounded-lg p-8 md:p-10 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Đóng góp lời bài hát</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+              Bạn biết lời bài hát yêu thích mà chúng tôi chưa có? Hãy chia sẻ với cộng đồng!
+            </p>
+            <button
+              onClick={() => router.push('/add-song')}
+              className="py-3 px-8 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            >
+              Thêm lời bài hát
+            </button>
+          </div>
+        </div>
+      </section>
+    </MainLayout>
+  );
 }
