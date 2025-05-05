@@ -2,7 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Language, Song, SearchResult } from '../types';
-import { addSong, getSongById, getSongs, saveSong, searchSongs, getTopSongs } from '../firebase/services';
+import { 
+  addSong, 
+  getSongById, 
+  getSongs, 
+  saveSong, 
+  searchSongs, 
+  getTopSongs,
+  isSongSaved,
+  removeSavedSong
+} from '../firebase/services';
 import { useAuth } from './useAuth';
 
 export function useSongs() {
@@ -87,7 +96,38 @@ export function useSongs() {
     setLoading(true);
     setError(null);
     try {
-      await saveSong(songId);
+      const isSaved = await isSongSaved(songId);
+      if (isSaved) {
+        await removeSavedSong(songId);
+      } else {
+        await saveSong(songId);
+      }
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const checkSavedStatus = useCallback(async (songId: string) => {
+    if (!user) return false;
+    
+    try {
+      return await isSongSaved(songId);
+    } catch (err) {
+      console.error('Lỗi khi kiểm tra trạng thái lưu:', err);
+      return false;
+    }
+  }, [user]);
+
+  const removeFavoriteSong = useCallback(async (songId: string) => {
+    if (!user) throw new Error('Bạn phải đăng nhập để xóa bài hát khỏi danh sách đã lưu');
+
+    setLoading(true);
+    setError(null);
+    try {
+      await removeSavedSong(songId);
     } catch (err) {
       setError(err as Error);
       throw err;
@@ -123,6 +163,8 @@ export function useSongs() {
     fetchTopSongs,
     search,
     createSong,
-    saveFavoriteSong
+    saveFavoriteSong,
+    checkSavedStatus,
+    removeFavoriteSong
   };
 } 

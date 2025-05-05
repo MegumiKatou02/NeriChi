@@ -133,6 +133,9 @@ export const saveSong = async (songId: string) => {
   const userPrefsRef = doc(db, 'userPreferences', user.uid);
   const userPrefsDoc = await getDoc(userPrefsRef);
   
+  const songRef = doc(db, 'songs', songId);
+  await updateDoc(songRef, { likes: increment(1) });
+  
   if (userPrefsDoc.exists()) {
     const savedSongs = userPrefsDoc.data().savedSongs || [];
     if (!savedSongs.includes(songId)) {
@@ -185,4 +188,39 @@ export const getTopSongs = async (sortBy: 'views' | 'likes' = 'views', limit_cou
     createdAt: doc.data().createdAt?.toDate(),
     updatedAt: doc.data().updatedAt?.toDate(),
   } as Song));
+};
+
+export const isSongSaved = async (songId: string) => {
+  const user = auth.currentUser;
+  if (!user) return false;
+  
+  const userPrefsRef = doc(db, 'userPreferences', user.uid);
+  const userPrefsDoc = await getDoc(userPrefsRef);
+  
+  if (!userPrefsDoc.exists()) return false;
+  
+  const savedSongs = userPrefsDoc.data().savedSongs || [];
+  return savedSongs.includes(songId);
+};
+
+export const removeSavedSong = async (songId: string) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Bạn phải đăng nhập để xóa bài hát khỏi danh sách đã lưu');
+  
+  const userPrefsRef = doc(db, 'userPreferences', user.uid);
+  const userPrefsDoc = await getDoc(userPrefsRef);
+  
+  const songRef = doc(db, 'songs', songId);
+  await updateDoc(songRef, { likes: increment(-1) });
+  
+  if (userPrefsDoc.exists()) {
+    const savedSongs = userPrefsDoc.data().savedSongs || [];
+    const updatedSavedSongs = savedSongs.filter((id: string) => id !== songId);
+    
+    return updateDoc(userPrefsRef, {
+      savedSongs: updatedSavedSongs
+    });
+  }
+  
+  return null;
 }; 

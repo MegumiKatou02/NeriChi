@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FiEye, FiThumbsUp, FiShare2, FiHeart, FiMusic, FiCheckCircle } from 'react-icons/fi';
+import { FiEye, FiShare2, FiHeart, FiMusic, FiCheckCircle } from 'react-icons/fi';
 import { Song } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { useSongs } from '../../hooks/useSongs';
@@ -14,11 +14,23 @@ interface SongCardProps {
 
 export default function SongCard({ song }: SongCardProps) {
   const { user } = useAuth();
-  const { saveFavoriteSong } = useSongs();
+  const { saveFavoriteSong, checkSavedStatus } = useSongs();
   const { setIsAuthModalOpen } = useUIStore();
   const [isSaving, setIsSaving] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (user) {
+        const status = await checkSavedStatus(song.id);
+        setIsFavorite(status);
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [user, checkSavedStatus, song.id]);
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,6 +44,7 @@ export default function SongCard({ song }: SongCardProps) {
     try {
       setIsSaving(true);
       await saveFavoriteSong(song.id);
+      setIsFavorite(!isFavorite); // Toggle favorite status
     } catch (error) {
       console.error('Lỗi khi lưu bài hát:', error);
     } finally {
@@ -95,10 +108,10 @@ export default function SongCard({ song }: SongCardProps) {
               <FiEye className="mr-1" />
               <span>{song.views.toLocaleString()}</span>
             </div>
-            <div className="flex items-center">
-              <FiThumbsUp className="mr-1" />
+            {/* <div className="flex items-center">
+              <FiHeart className="mr-1" />
               <span>{song.likes.toLocaleString()}</span>
-            </div>
+            </div> */}
           </div>
           
           <div className="flex space-x-2">
@@ -106,9 +119,11 @@ export default function SongCard({ song }: SongCardProps) {
               onClick={handleSave}
               disabled={isSaving}
               className="p-2 rounded-full hover:bg-background dark:hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
-              title="Lưu bài hát"
+              title={isFavorite ? "Hủy lưu bài hát" : "Lưu bài hát"}
             >
-              <FiHeart className={`w-5 h-5 ${isSaving ? 'animate-pulse' : ''}`} />
+              <FiHeart 
+                className={`w-5 h-5 ${isSaving ? 'animate-pulse' : ''} ${isFavorite ? 'text-red-500 fill-red-500' : ''}`} 
+              />
             </button>
             
             <div className="relative">

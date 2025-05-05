@@ -107,9 +107,9 @@ export default function TopPage() {
                     <div className="flex items-center text-amber-500">
                       <FiEye className="mr-1" /> {song.views.toLocaleString('vi-VN')}
                     </div>
-                    <div className="flex items-center text-rose-500">
+                    {/* <div className="flex items-center text-rose-500">
                       <FiHeart className="mr-1" /> {song.likes.toLocaleString('vi-VN')}
-                    </div>
+                    </div> */}
                   </div>
                   
                   {index === 0 && (

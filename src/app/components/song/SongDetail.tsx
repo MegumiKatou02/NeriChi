@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiCopy, FiHeart, FiShare2, FiEye, FiThumbsUp, FiFlag } from 'react-icons/fi';
+import { FiCopy, FiHeart, FiShare2, FiEye, FiFlag } from 'react-icons/fi';
 import { Song, Language } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { useSongs } from '../../hooks/useSongs';
@@ -95,10 +95,10 @@ export default function SongDetail({ song }: SongDetailProps) {
             <FiEye className="mr-1" />
             <span>{song.views.toLocaleString()} lượt xem</span>
           </div>
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <FiThumbsUp className="mr-1" />
             <span>{song.likes.toLocaleString()} thích</span>
-          </div>
+          </div> */}
         </div>
         <div className="flex space-x-2">
           <button
