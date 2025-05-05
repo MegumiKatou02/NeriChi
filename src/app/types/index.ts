@@ -33,6 +33,7 @@ export interface User {
     KOREAN = "korean",
     JAPANESE = "japanese",
     CHINESE = "chinese",
+    ROMAJI = "romaji",
     OTHER = "other"
   }
   

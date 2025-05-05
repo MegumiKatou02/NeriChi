@@ -41,12 +41,10 @@ export default function SongList({
     if (!initialSongs && songs) {
       let filtered = [...songs];
       
-      // Filter by language
       if (language !== 'all') {
         filtered = filtered.filter(song => song.language === language);
       }
       
-      // Sort
       if (sortBy === 'newest') {
         filtered.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
       } else if (sortBy === 'popular') {
@@ -58,7 +56,6 @@ export default function SongList({
     }
   }, [initialSongs, songs, language, sortBy]);
 
-  // Get current songs for pagination
   const indexOfLastSong = currentPage * songsPerPage;
   const indexOfFirstSong = indexOfLastSong - songsPerPage;
   const currentSongs = displaySongs.slice(indexOfFirstSong, indexOfLastSong);
@@ -98,7 +95,6 @@ export default function SongList({
         
         {showFilters && (
           <div className="flex flex-wrap gap-2 items-center">
-            {/* View mode switcher */}
             <div className="flex border  rounded-md overflow-hidden">
               <button
                 onClick={() => setViewMode('grid')}
@@ -116,7 +112,6 @@ export default function SongList({
               </button>
             </div>
             
-            {/* Language filter */}
             <div className="relative">
               <button
                 onClick={() => setShowLanguageFilter(!showLanguageFilter)}
@@ -161,7 +156,6 @@ export default function SongList({
               )}
             </div>
             
-            {/* Sort filter */}
             <div className="relative">
               <button
                 onClick={() => setShowSortFilter(!showSortFilter)}
@@ -214,7 +208,6 @@ export default function SongList({
         </div>
       )}
       
-      {/* Pagination */}
       {displaySongs.length > songsPerPage && (
         <div className="mt-8 flex justify-center">
           <nav className="flex items-center space-x-2">

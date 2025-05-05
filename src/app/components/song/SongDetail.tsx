@@ -12,6 +12,7 @@ const languageDisplay: Record<Language, string> = {
   [Language.KOREAN]: 'Tiếng Hàn',
   [Language.JAPANESE]: 'Tiếng Nhật',
   [Language.CHINESE]: 'Tiếng Trung',
+  [Language.ROMAJI]: 'Tiếng Nhật (Romaji)',
   [Language.OTHER]: 'Khác',
 };
 

@@ -34,7 +34,6 @@ export default function ProfilePage() {
       setSaving(true);
       setError(null);
 
-      // Cập nhật displayName trong Firestore
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { displayName });
 
@@ -59,7 +58,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Nếu đang kiểm tra auth, hiển thị trạng thái đang tải
   if (authLoading) {
     return (
       <MainLayout>
@@ -73,7 +71,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Nếu người dùng không đăng nhập, hiển thị thông báo yêu cầu đăng nhập
   if (!user) {
     return (
       <MainLayout>

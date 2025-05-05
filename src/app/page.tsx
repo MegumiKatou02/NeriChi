@@ -27,7 +27,6 @@ export default function Home() {
 
   return (
     <MainLayout>
-      {/* Hero section */}
       <section className="pt-10 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
@@ -37,7 +36,6 @@ export default function Home() {
             Tìm kiếm, lưu trữ và chia sẻ lời bài hát từ hàng ngàn bài hát Việt Nam và quốc tế.
           </p>
 
-          {/* Search box */}
           <div className="max-w-2xl mx-auto">
             <form onSubmit={handleSearch} className="flex">
               <div className="relative flex-grow">
@@ -61,7 +59,6 @@ export default function Home() {
             </form>
           </div>
 
-          {/* Features */}
           <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex justify-center items-center h-12 w-12 rounded-md bg-primary/10 text-primary mx-auto mb-4">
@@ -94,14 +91,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Popular songs */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <SongList title="Bài hát phổ biến" initialSongs={songs} />
         </div>
       </section>
 
-      {/* Categories by language */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900/50">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-10 text-center">
@@ -138,7 +133,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* User contribution */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-primary/10 dark:bg-primary/5 rounded-lg p-8 md:p-10 text-center">

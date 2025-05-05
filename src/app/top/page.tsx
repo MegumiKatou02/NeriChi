@@ -50,7 +50,6 @@ export default function TopPage() {
           </p>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-border mb-8">
           <button
             onClick={() => setActiveTab('views')}

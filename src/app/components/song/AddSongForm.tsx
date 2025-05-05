@@ -166,6 +166,7 @@ export default function AddSongForm() {
                 <option value={Language.KOREAN}>Tiếng Hàn</option>
                 <option value={Language.JAPANESE}>Tiếng Nhật</option>
                 <option value={Language.CHINESE}>Tiếng Trung</option>
+                <option value={Language.ROMAJI}>Romaji</option>
                 <option value={Language.OTHER}>Khác</option>
               </select>
             </div>

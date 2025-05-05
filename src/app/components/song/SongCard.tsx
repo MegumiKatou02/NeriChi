@@ -74,7 +74,7 @@ export default function SongCard({ song }: SongCardProps) {
 
   return (
     <Link href={`/songs/${song.id}`} className="block group">
-      <div className="card overflow-hidden hover:shadow-md transition-all duration-300 hover:translate-y-[-2px]">
+      <div className="card hover:shadow-md transition-all duration-300 hover:translate-y-[-2px]">
         <div className="px-5 py-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -121,7 +121,7 @@ export default function SongCard({ song }: SongCardProps) {
               </button>
               
               {showShareOptions && (
-                <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg z-10 border  animate-fade-in py-1">
+                <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg z-[999] border  animate-fade-in py-1">
                   <button
                     onClick={(e) => shareTo('facebook', e)}
                     className="flex w-full items-center px-4 py-2 text-sm text-foreground hover:bg-muted"
@@ -150,7 +150,7 @@ export default function SongCard({ song }: SongCardProps) {
                   >
                     {copied ? (
                       <>
-                        <FiCheckCircle className="w-5 h-5 mr-2 text-green-500" />
+                        <FiCheckCircle className="w-5 h-5 mr-2 text-success" />
                         Đã sao chép
                       </>
                     ) : (

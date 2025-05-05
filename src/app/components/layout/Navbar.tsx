@@ -79,7 +79,6 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
@@ -88,7 +87,6 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             <Link
               href="/"
@@ -130,9 +128,7 @@ export default function Navbar() {
             )}
           </nav>
 
-          {/* Desktop right section */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Search form */}
             <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
@@ -144,16 +140,21 @@ export default function Navbar() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             </form>
 
-            {/* Theme toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full text-foreground hover:bg-muted transition-colors"
+              className="p-2 rounded-full text-foreground hover:bg-muted transition-colors relative overflow-hidden group theme-transition"
               aria-label={isDarkMode ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
             >
-              {isDarkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
+              <div className="relative z-10 flex items-center justify-center">
+                {isDarkMode ? (
+                  <FiSun className="h-5 w-5 transition-transform duration-300 group-hover:rotate-45" />
+                ) : (
+                  <FiMoon className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-12" />
+                )}
+              </div>
+              <span className={`absolute inset-0 rounded-full bg-muted transform scale-0 transition-transform duration-300 group-hover:scale-100 ${isDarkMode ? 'bg-orange-100/10' : 'bg-blue-100/50'}`}></span>
             </button>
 
-            {/* Auth buttons */}
             {user ? (
               <div className="relative">
                 <button 
@@ -227,7 +228,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <button
               onClick={toggleDarkMode}
@@ -247,7 +247,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-card border-b border-border animate-fade-in">
           <div className="px-4 pt-2 pb-3 space-y-1 sm:px-3">
