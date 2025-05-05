@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LyricsHub - Tìm kiếm và chia sẻ lời bài hát",
+  title: "Nerichi - Tìm kiếm và chia sẻ lời bài hát",
   description: "Trang web tìm kiếm, lưu trữ và chia sẻ lời bài hát tiếng Việt và quốc tế.",
   keywords: "lời bài hát, lyrics, nhạc việt, bài hát, tìm kiếm lời bài hát",
-  authors: [{ name: "LyricsHub Team" }],
-  creator: "LyricsHub",
+  authors: [{ name: "Nerichi Team" }],
+  creator: "Yukiookii",
   icons: {
     icon: "/favicon.ico",
   },

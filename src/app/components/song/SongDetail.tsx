@@ -53,7 +53,7 @@ export default function SongDetail({ song }: SongDetailProps) {
 
   const shareTo = (platform: 'facebook' | 'twitter' | 'copy') => {
     const url = window.location.href;
-    const title = `${song.title} - ${song.artist} | LyricsHub`;
+    const title = `${song.title} - ${song.artist} | Nerichi`;
 
     switch (platform) {
       case 'facebook':

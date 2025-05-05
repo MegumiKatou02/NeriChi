@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8 xl:col-span-1">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary">LyricsHub</span>
+              <span className="text-2xl font-bold text-primary">NeriChi</span>
             </Link>
             <p className="text-gray-500 dark:text-gray-400 text-base">
               Nơi tìm kiếm, lưu trữ và chia sẻ lời bài hát yêu thích của bạn.
@@ -40,7 +40,7 @@ export default function Footer() {
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-300 tracking-wider uppercase">
-                  LyricsHub
+                  Nerichi
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
@@ -177,7 +177,7 @@ export default function Footer() {
         </div>
         <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
           <p className="text-base text-gray-400 xl:text-center">
-            &copy; {currentYear} LyricsHub. Đã đăng ký bản quyền.
+            &copy; {currentYear} NeriChi. Đã đăng ký bản quyền.
           </p>
         </div>
       </div>

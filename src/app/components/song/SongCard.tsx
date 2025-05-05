@@ -50,7 +50,7 @@ export default function SongCard({ song }: SongCardProps) {
     e.stopPropagation();
     
     const url = `${window.location.origin}/songs/${song.id}`;
-    const title = `${song.title} - ${song.artist} | LyricsHub`;
+    const title = `${song.title} - ${song.artist} | NeriChi`;
 
     switch (platform) {
       case 'facebook':

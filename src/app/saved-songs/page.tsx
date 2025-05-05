@@ -41,7 +41,6 @@ export default function SavedSongsPage() {
     }
   }, [user, authLoading]);
 
-  // Nếu đang kiểm tra auth, hiển thị trạng thái đang tải
   if (authLoading) {
     return (
       <MainLayout>
@@ -55,7 +54,6 @@ export default function SavedSongsPage() {
     );
   }
 
-  // Nếu người dùng không đăng nhập, hiển thị thông báo yêu cầu đăng nhập
   if (!user) {
     return (
       <MainLayout>
