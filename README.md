@@ -1,6 +1,6 @@
-# NeriChi (Nerine + Ching)
+# NeriChi
 
-**Lyrics Next** is a modern platform for searching, saving, and sharing song lyrics, supporting multiple languages. Built with Next.js, Firebase, Chakra UI, and Tailwind CSS.
+**NeriChi** is a modern platform for searching, saving, and sharing song lyrics, supporting multiple languages. Built with Next.js, Firebase, Chakra UI, and Tailwind CSS.
 
 ## 🚀 Key Features
 
