@@ -39,7 +39,7 @@ export default function AdminPage() {
         });
     
         return () => unsubscribe();
-    }, [router]);
+    }, [router, adminUid]);
 
     const fetchSongs = async () => {
         setLoading(true);
