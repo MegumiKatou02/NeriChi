@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Language, Song, SearchResult } from '../types';
 import { 
   addSong, 
@@ -13,6 +13,7 @@ import {
   removeSavedSong
 } from '../firebase/services';
 import { useAuth } from './useAuth';
+import { auth } from '../firebase/config';
 
 export function useSongs() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -79,9 +80,19 @@ export function useSongs() {
     setLoading(true);
     setError(null);
     try {
-      const docRef = await addSong(song);
-      await fetchSongs();
-      return docRef.id;
+      const user = auth.currentUser;
+      if (!user) throw new Error('Bạn phải đăng nhập để thêm bài hát');
+      
+      song.contributors.push(user.uid);
+
+      const response = await fetch('/api/pending-song', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(song),
+      });      
+
     } catch (err) {
       setError(err as Error);
       throw err;
