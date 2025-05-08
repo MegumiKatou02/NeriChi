@@ -232,3 +232,77 @@ export const removeSavedSong = async (songId: string) => {
 
   return null
 }
+
+export async function getUserSongs(userId: string): Promise<Song[]> {
+  try {
+    const songsCollection = collection(db, 'songs')
+    const q = query(
+      songsCollection,
+      where('contributors', 'array-contains', userId),
+      where('approved', '==', true),
+      orderBy('createdAt', 'desc'),
+    )
+
+    const querySnapshot = await getDocs(q)
+    const songs: Song[] = []
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data()
+      songs.push({
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      } as Song)
+    })
+
+    return songs
+  } catch (error) {
+    console.error('Error getting user contributed songs:', error)
+    throw error
+  }
+}
+
+export async function getUserFavorites(userId: string): Promise<Song[]> {
+  try {
+    const userPrefsRef = doc(db, 'userPreferences', userId)
+    const userPrefsSnap = await getDoc(userPrefsRef)
+
+    if (!userPrefsSnap.exists() || !userPrefsSnap.data().savedSongs) {
+      return []
+    }
+
+    const savedSongs = userPrefsSnap.data().savedSongs as string[]
+
+    if (savedSongs.length === 0) {
+      return []
+    }
+
+    console.log('savedSongs', savedSongs)
+
+    const songsCollection = collection(db, 'songs')
+    const q = query(songsCollection, where('__name__', 'in', savedSongs))
+
+    const querySnapshot = await getDocs(q)
+    console.log(
+      'querySnapshot',
+      querySnapshot.docs.map((doc) => doc.data()),
+    )
+    const songs: Song[] = []
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data()
+      songs.push({
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      } as Song)
+    })
+
+    return songs
+  } catch (error) {
+    console.error('Error getting user favorite songs:', error)
+    throw error
+  }
+}

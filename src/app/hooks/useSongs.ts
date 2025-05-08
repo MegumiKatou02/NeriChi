@@ -10,6 +10,8 @@ import {
   getTopSongs,
   isSongSaved,
   removeSavedSong,
+  getUserSongs,
+  getUserFavorites,
 } from '../firebase/services'
 import { useAuth } from './useAuth'
 import { auth } from '../firebase/config'
@@ -179,6 +181,34 @@ export function useSongs() {
     [],
   )
 
+  const fetchUserSongs = useCallback(async (userId: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const userSongs = await getUserSongs(userId)
+      return userSongs
+    } catch (err) {
+      setError(err as Error)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchUserFavorites = useCallback(async (userId: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const favoriteSongs = await getUserFavorites(userId)
+      return favoriteSongs
+    } catch (err) {
+      setError(err as Error)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   return {
     songs,
     currentSong,
@@ -194,5 +224,7 @@ export function useSongs() {
     saveFavoriteSong,
     checkSavedStatus,
     removeFavoriteSong,
+    getUserSongs: fetchUserSongs,
+    getUserFavorites: fetchUserFavorites,
   }
 }
