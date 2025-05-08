@@ -1,50 +1,50 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSongs } from '../../hooks/useSongs';
-import { Language } from '../../types';
-import { FiMusic, FiUser, FiType, FiFlag, FiAlertCircle } from 'react-icons/fi';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSongs } from '../../hooks/useSongs'
+import { Language } from '../../types'
+import { FiMusic, FiUser, FiType, FiFlag, FiAlertCircle } from 'react-icons/fi'
 
 export default function AddSongForm() {
-  const router = useRouter();
-  const { createSong } = useSongs();
-  const [title, setTitle] = useState('');
-  const [artist, setArtist] = useState('');
-  const [lyrics, setLyrics] = useState('');
-  const [language, setLanguage] = useState<Language>(Language.VIETNAMESE);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const router = useRouter()
+  const { createSong } = useSongs()
+  const [title, setTitle] = useState('')
+  const [artist, setArtist] = useState('')
+  const [lyrics, setLyrics] = useState('')
+  const [language, setLanguage] = useState<Language>(Language.VIETNAMESE)
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   const validate = () => {
-    const newErrors: { [key: string]: string } = {};
+    const newErrors: { [key: string]: string } = {}
 
     if (!title.trim()) {
-      newErrors.title = 'Vui lòng nhập tên bài hát';
+      newErrors.title = 'Vui lòng nhập tên bài hát'
     }
 
     if (!artist.trim()) {
-      newErrors.artist = 'Vui lòng nhập tên ca sĩ';
+      newErrors.artist = 'Vui lòng nhập tên ca sĩ'
     }
 
     if (!lyrics.trim()) {
-      newErrors.lyrics = 'Vui lòng nhập lời bài hát';
+      newErrors.lyrics = 'Vui lòng nhập lời bài hát'
     } else if (lyrics.trim().length < 30) {
-      newErrors.lyrics = 'Lời bài hát quá ngắn';
+      newErrors.lyrics = 'Lời bài hát quá ngắn'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!validate()) return;
+    if (!validate()) return
 
     try {
-      setLoading(true);
+      setLoading(true)
       await createSong({
         title,
         artist,
@@ -52,29 +52,31 @@ export default function AddSongForm() {
         language,
         contributors: [],
         approved: true,
-      });
-      setSuccess(true);
-      setTitle('');
-      setArtist('');
-      setLyrics('');
-      setLanguage(Language.VIETNAMESE);
+      })
+      setSuccess(true)
+      setTitle('')
+      setArtist('')
+      setLyrics('')
+      setLanguage(Language.VIETNAMESE)
       setTimeout(() => {
-        router.push('/songs');
-      }, 3000);
+        router.push('/songs')
+      }, 3000)
     } catch (error) {
-      console.error('Error adding song:', error);
+      console.error('Error adding song:', error)
       setErrors({
         submit: (error as Error).message || 'Đã xảy ra lỗi khi thêm bài hát. Vui lòng thử lại sau.',
-      });
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
       <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Thêm lời bài hát mới</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Thêm lời bài hát mới
+        </h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Đóng góp lời bài hát yêu thích của bạn để chia sẻ với cộng đồng
         </p>
@@ -85,7 +87,8 @@ export default function AddSongForm() {
           <div className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 p-4 rounded-md mb-6">
             <p className="font-medium">Cảm ơn bạn đã đóng góp!</p>
             <p className="mt-1">
-              Lời bài hát của bạn đã được gửi và đang chờ xét duyệt. Chúng tôi sẽ xem xét và xuất bản sớm nhất có thể.
+              Lời bài hát của bạn đã được gửi và đang chờ xét duyệt. Chúng tôi sẽ xem xét và xuất
+              bản sớm nhất có thể.
             </p>
             <p className="mt-3">Đang chuyển hướng về trang chủ...</p>
           </div>
@@ -100,7 +103,10 @@ export default function AddSongForm() {
           )}
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Tên bài hát <span className="text-red-500">*</span>
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
@@ -120,11 +126,16 @@ export default function AddSongForm() {
                 placeholder="Nhập tên bài hát"
               />
             </div>
-            {errors.title && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.title}</p>}
+            {errors.title && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="artist" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="artist"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Ca sĩ <span className="text-red-500">*</span>
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
@@ -144,11 +155,16 @@ export default function AddSongForm() {
                 placeholder="Nhập tên ca sĩ"
               />
             </div>
-            {errors.artist && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.artist}</p>}
+            {errors.artist && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.artist}</p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="language"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Ngôn ngữ <span className="text-red-500">*</span>
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
@@ -173,7 +189,10 @@ export default function AddSongForm() {
           </div>
 
           <div>
-            <label htmlFor="lyrics" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="lyrics"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Lời bài hát <span className="text-red-500">*</span>
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
@@ -193,7 +212,9 @@ export default function AddSongForm() {
                 placeholder="Nhập lời bài hát"
               />
             </div>
-            {errors.lyrics && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.lyrics}</p>}
+            {errors.lyrics && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.lyrics}</p>
+            )}
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Vui lòng nhập lời bài hát đầy đủ và chính xác. Mỗi câu nên được viết trên một dòng.
             </p>
@@ -211,5 +232,5 @@ export default function AddSongForm() {
         </form>
       )}
     </div>
-  );
-} 
+  )
+}

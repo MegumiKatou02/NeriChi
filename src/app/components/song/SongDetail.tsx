@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { FiCopy, FiHeart, FiShare2, FiEye, FiFlag, FiUsers } from 'react-icons/fi';
-import { Song, Language } from '../../types';
-import { useAuth } from '../../hooks/useAuth';
-import { useSongs } from '../../hooks/useSongs';
-import ContributorAvatars from '../shared/ContributorAvatars';
+import { useState } from 'react'
+import { FiCopy, FiHeart, FiShare2, FiEye, FiFlag, FiUsers } from 'react-icons/fi'
+import { Song, Language } from '../../types'
+import { useAuth } from '../../hooks/useAuth'
+import { useSongs } from '../../hooks/useSongs'
+import ContributorAvatars from '../shared/ContributorAvatars'
 
 const languageDisplay: Record<Language, string> = {
   [Language.VIETNAMESE]: 'Tiếng Việt',
@@ -15,73 +15,76 @@ const languageDisplay: Record<Language, string> = {
   [Language.CHINESE]: 'Tiếng Trung',
   [Language.ROMAJI]: 'Tiếng Nhật (Romaji)',
   [Language.OTHER]: 'Khác',
-};
+}
 
 interface SongDetailProps {
-  song: Song;
+  song: Song
 }
 
 export default function SongDetail({ song }: SongDetailProps) {
-  const { user } = useAuth();
-  const { saveFavoriteSong } = useSongs();
-  const [showShareOptions, setShowShareOptions] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth()
+  const { saveFavoriteSong } = useSongs()
+  const [showShareOptions, setShowShareOptions] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const handleCopyLyrics = () => {
-    navigator.clipboard.writeText(song.lyrics);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-  };
+    navigator.clipboard.writeText(song.lyrics)
+    setIsCopied(true)
+    setTimeout(() => setIsCopied(false), 2000)
+  }
 
   const handleSave = async () => {
     if (!user) {
-      return;
+      return
     }
 
     try {
-      setIsSaving(true);
-      await saveFavoriteSong(song.id);
+      setIsSaving(true)
+      await saveFavoriteSong(song.id)
     } catch (error) {
-      console.error('Lỗi khi lưu bài hát:', error);
+      console.error('Lỗi khi lưu bài hát:', error)
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleShare = () => {
-    setShowShareOptions(!showShareOptions);
-  };
+    setShowShareOptions(!showShareOptions)
+  }
 
   const shareTo = (platform: 'facebook' | 'twitter' | 'copy') => {
-    const url = window.location.href;
-    const title = `${song.title} - ${song.artist} | Nerichi`;
+    const url = window.location.href
+    const title = `${song.title} - ${song.artist} | Nerichi`
 
     switch (platform) {
       case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-        break;
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+          '_blank',
+        )
+        break
       case 'twitter':
         window.open(
           `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
-          '_blank'
-        );
-        break;
+          '_blank',
+        )
+        break
       case 'copy':
-        navigator.clipboard.writeText(url);
-        break;
+        navigator.clipboard.writeText(url)
+        break
     }
 
-    setShowShareOptions(false);
-  };
+    setShowShareOptions(false)
+  }
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('vi-VN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(date);
-  };
+    }).format(date)
+  }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -162,7 +165,9 @@ export default function SongDetail({ song }: SongDetailProps) {
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center mb-3">
               <FiUsers className="text-gray-500 dark:text-gray-400 mr-2" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Người đóng góp</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Người đóng góp
+              </h3>
             </div>
             <div className="flex items-center">
               <ContributorAvatars contributors={song.contributors} maxDisplay={8} size="md" />
@@ -174,28 +179,34 @@ export default function SongDetail({ song }: SongDetailProps) {
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
             <div>
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Ngôn ngữ</dt>
-              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{languageDisplay[song.language]}</dd>
+              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {languageDisplay[song.language]}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Ngày thêm</dt>
-              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{formatDate(song.createdAt)}</dd>
+              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {formatDate(song.createdAt)}
+              </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Cập nhật gần nhất</dt>
-              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{formatDate(song.updatedAt)}</dd>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Cập nhật gần nhất
+              </dt>
+              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {formatDate(song.updatedAt)}
+              </dd>
             </div>
           </dl>
         </div>
 
         <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
-          <button
-            className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-          >
+          <button className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
             <FiFlag className="mr-1" />
             <span>Báo cáo lời sai</span>
           </button>
         </div>
       </div>
     </div>
-  );
-} 
+  )
+}

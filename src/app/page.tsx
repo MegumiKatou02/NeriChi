@@ -1,29 +1,29 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import MainLayout from './components/layout/MainLayout';
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import MainLayout from './components/layout/MainLayout'
 // import SearchBox from './components/ui/SearchBox';
-import SongList from '@/app/components/song/SongList';
+import SongList from '@/app/components/song/SongList'
 import { useSongs } from '@/app/hooks/useSongs'
-import { FiMusic, FiSearch, FiHeart, FiGlobe } from 'react-icons/fi';
-import { Language } from './types';
+import { FiMusic, FiSearch, FiHeart, FiGlobe } from 'react-icons/fi'
+import { Language } from './types'
 
 export default function Home() {
-  const router = useRouter();
-  const { fetchSongs, songs } = useSongs();
-  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter()
+  const { fetchSongs, songs } = useSongs()
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    fetchSongs();
-  }, [fetchSongs]);
+    fetchSongs()
+  }, [fetchSongs])
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (searchTerm.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`)
     }
-  };
+  }
 
   return (
     <MainLayout>
@@ -64,7 +64,9 @@ export default function Home() {
               <div className="flex justify-center items-center h-12 w-12 rounded-md bg-primary/10 text-primary mx-auto mb-4">
                 <FiSearch size={24} />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Tìm kiếm nhanh chóng</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Tìm kiếm nhanh chóng
+              </h3>
               <p className="text-gray-500 dark:text-gray-400">
                 Tìm kiếm lời bài hát trong vài giây với kết quả chính xác.
               </p>
@@ -73,7 +75,9 @@ export default function Home() {
               <div className="flex justify-center items-center h-12 w-12 rounded-md bg-primary/10 text-primary mx-auto mb-4">
                 <FiHeart size={24} />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Lưu bài hát yêu thích</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Lưu bài hát yêu thích
+              </h3>
               <p className="text-gray-500 dark:text-gray-400">
                 Lưu lại những bài hát bạn yêu thích để xem lại bất cứ lúc nào.
               </p>
@@ -82,7 +86,9 @@ export default function Home() {
               <div className="flex justify-center items-center h-12 w-12 rounded-md bg-primary/10 text-primary mx-auto mb-4">
                 <FiGlobe size={24} />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Đa dạng ngôn ngữ</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Đa dạng ngôn ngữ
+              </h3>
               <p className="text-gray-500 dark:text-gray-400">
                 Hỗ trợ nhiều ngôn ngữ bài hát từ Việt, Anh, Hàn, Nhật và nhiều hơn nữa.
               </p>
@@ -119,8 +125,7 @@ export default function Home() {
                   {lang === Language.OTHER && 'Ngôn ngữ khác'}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Khám phá các bài hát{' '}
-                  {lang === Language.VIETNAMESE && 'tiếng Việt'}
+                  Khám phá các bài hát {lang === Language.VIETNAMESE && 'tiếng Việt'}
                   {lang === Language.ENGLISH && 'tiếng Anh'}
                   {lang === Language.KOREAN && 'tiếng Hàn (K-Pop)'}
                   {lang === Language.JAPANESE && 'tiếng Nhật (J-Pop)'}
@@ -136,7 +141,9 @@ export default function Home() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-primary/10 dark:bg-primary/5 rounded-lg p-8 md:p-10 text-center">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Đóng góp lời bài hát</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Đóng góp lời bài hát
+            </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Bạn biết lời bài hát yêu thích mà chúng tôi chưa có? Hãy chia sẻ với cộng đồng!
             </p>
@@ -150,5 +157,5 @@ export default function Home() {
         </div>
       </section>
     </MainLayout>
-  );
+  )
 }

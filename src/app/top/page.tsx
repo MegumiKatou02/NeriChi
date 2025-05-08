@@ -1,53 +1,51 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import MainLayout from '../components/layout/MainLayout';
-import { useSongs } from '../hooks/useSongs';
-import { Song } from '../types';
-import Link from 'next/link';
-import { FiEye, FiHeart, FiCalendar, FiMusic, FiBarChart, FiTrendingUp } from 'react-icons/fi';
+import { useEffect, useState } from 'react'
+import MainLayout from '../components/layout/MainLayout'
+import { useSongs } from '../hooks/useSongs'
+import { Song } from '../types'
+import Link from 'next/link'
+import { FiEye, FiHeart, FiCalendar, FiMusic, FiBarChart, FiTrendingUp } from 'react-icons/fi'
 
 export default function TopPage() {
-  const { fetchTopSongs, loading } = useSongs();
-  const [topViewSongs, setTopViewSongs] = useState<Song[]>([]);
-  const [topLikedSongs, setTopLikedSongs] = useState<Song[]>([]);
-  const [activeTab, setActiveTab] = useState<'views' | 'likes'>('views');
+  const { fetchTopSongs, loading } = useSongs()
+  const [topViewSongs, setTopViewSongs] = useState<Song[]>([])
+  const [topLikedSongs, setTopLikedSongs] = useState<Song[]>([])
+  const [activeTab, setActiveTab] = useState<'views' | 'likes'>('views')
 
   useEffect(() => {
     const loadTopSongs = async () => {
       try {
-        const topByViews = await fetchTopSongs('views', 10);
-        setTopViewSongs(topByViews);
-        
-        const topByLikes = await fetchTopSongs('likes', 10);
-        setTopLikedSongs(topByLikes);
+        const topByViews = await fetchTopSongs('views', 10)
+        setTopViewSongs(topByViews)
+
+        const topByLikes = await fetchTopSongs('likes', 10)
+        setTopLikedSongs(topByLikes)
       } catch (error) {
-        console.error('Error fetching top songs:', error);
+        console.error('Error fetching top songs:', error)
       }
-    };
-    
-    loadTopSongs();
-  }, [fetchTopSongs]);
+    }
+
+    loadTopSongs()
+  }, [fetchTopSongs])
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('vi-VN', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
-    }).format(date);
-  };
+      day: 'numeric',
+    }).format(date)
+  }
 
   return (
     <MainLayout>
       <div className="container max-w-6xl py-12">
         <div className="mb-10">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 flex items-center">
-            <FiBarChart className="mr-3 text-primary" /> 
+            <FiBarChart className="mr-3 text-primary" />
             Bảng xếp hạng
           </h1>
-          <p className="text-muted-foreground text-lg">
-            Những bài hát nổi bật nhất trên NeriChi
-          </p>
+          <p className="text-muted-foreground text-lg">Những bài hát nổi bật nhất trên NeriChi</p>
         </div>
 
         <div className="flex border-b border-border mb-8">
@@ -80,7 +78,7 @@ export default function TopPage() {
         ) : (
           <div className="space-y-6">
             {(activeTab === 'views' ? topViewSongs : topLikedSongs).map((song, index) => (
-              <div 
+              <div
                 key={song.id}
                 className="flex flex-col md:flex-row md:items-center p-4 bg-card rounded-lg border border-border transition-all hover:shadow-md"
               >
@@ -89,7 +87,10 @@ export default function TopPage() {
                     {index + 1}
                   </div>
                   <div className="flex-1">
-                    <Link href={`/songs/${song.id}`} className="text-lg font-semibold hover:text-primary">
+                    <Link
+                      href={`/songs/${song.id}`}
+                      className="text-lg font-semibold hover:text-primary"
+                    >
                       {song.title}
                     </Link>
                     <div className="text-sm text-muted-foreground flex items-center mt-1">
@@ -97,12 +98,12 @@ export default function TopPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-wrap items-center justify-between md:justify-end md:flex-1 text-sm gap-4">
                   <div className="flex items-center text-muted-foreground">
                     <FiCalendar className="mr-1" /> {formatDate(song.createdAt)}
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <div className="flex items-center text-amber-500">
                       <FiEye className="mr-1" /> {song.views.toLocaleString('vi-VN')}
@@ -111,7 +112,7 @@ export default function TopPage() {
                       <FiHeart className="mr-1" /> {song.likes.toLocaleString('vi-VN')}
                     </div> */}
                   </div>
-                  
+
                   {index === 0 && (
                     <div className="md:ml-4 flex items-center text-emerald-500">
                       <FiTrendingUp className="mr-1" /> Top 1
@@ -120,7 +121,7 @@ export default function TopPage() {
                 </div>
               </div>
             ))}
-            
+
             {(activeTab === 'views' ? topViewSongs : topLikedSongs).length === 0 && (
               <div className="text-center py-20 text-muted-foreground">
                 <p>Chưa có dữ liệu bài hát nào. Hãy thêm bài hát mới!</p>
@@ -130,5 +131,5 @@ export default function TopPage() {
         )}
       </div>
     </MainLayout>
-  );
-} 
+  )
+}

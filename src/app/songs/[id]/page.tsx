@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import MainLayout from '@/app/components/layout/MainLayout';
-import SongDetail from '@/app/components/song/SongDetail';
-import { useSongs } from '@/app/hooks/useSongs';
-import { FiLoader, FiAlertCircle } from 'react-icons/fi';
-import Link from 'next/link';
+import { useEffect } from 'react'
+import { useParams } from 'next/navigation'
+import MainLayout from '@/app/components/layout/MainLayout'
+import SongDetail from '@/app/components/song/SongDetail'
+import { useSongs } from '@/app/hooks/useSongs'
+import { FiLoader, FiAlertCircle } from 'react-icons/fi'
+import Link from 'next/link'
 
 export default function SongDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
-  const { fetchSongById, currentSong, loading, error } = useSongs();
+  const params = useParams()
+  const id = params?.id as string
+  const { fetchSongById, currentSong, loading, error } = useSongs()
 
   useEffect(() => {
     if (id) {
-      fetchSongById(id);
+      fetchSongById(id)
     }
-  }, [id, fetchSongById]);
+  }, [id, fetchSongById])
 
   return (
     <MainLayout>
@@ -59,5 +59,5 @@ export default function SongDetailPage() {
         )}
       </div>
     </MainLayout>
-  );
-} 
+  )
+}

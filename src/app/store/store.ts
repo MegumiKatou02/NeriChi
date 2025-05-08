@@ -1,30 +1,30 @@
-'use client';
+'use client'
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { Language, SearchResult, Song } from '../types'
 
 interface SongState {
-  songs: Song[];
-  currentSong: Song | null;
-  searchResults: SearchResult | null;
-  searchTerm: string;
-  selectedLanguage: Language | null;
-  isLoading: boolean;
-  error: string | null;
-  favorites: string[]; 
-  recentlyViewed: string[];
-  setSongs: (songs: Song[]) => void;
-  setCurrentSong: (song: Song | null) => void;
-  setSearchResults: (results: SearchResult | null) => void;
-  setSearchTerm: (term: string) => void;
-  setSelectedLanguage: (language: Language | null) => void;
-  setIsLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-  addToFavorites: (songId: string) => void;
-  removeFromFavorites: (songId: string) => void;
-  addToRecentlyViewed: (songId: string) => void;
-  clearSearchResults: () => void;
+  songs: Song[]
+  currentSong: Song | null
+  searchResults: SearchResult | null
+  searchTerm: string
+  selectedLanguage: Language | null
+  isLoading: boolean
+  error: string | null
+  favorites: string[]
+  recentlyViewed: string[]
+  setSongs: (songs: Song[]) => void
+  setCurrentSong: (song: Song | null) => void
+  setSearchResults: (results: SearchResult | null) => void
+  setSearchTerm: (term: string) => void
+  setSelectedLanguage: (language: Language | null) => void
+  setIsLoading: (isLoading: boolean) => void
+  setError: (error: string | null) => void
+  addToFavorites: (songId: string) => void
+  removeFromFavorites: (songId: string) => void
+  addToRecentlyViewed: (songId: string) => void
+  clearSearchResults: () => void
 }
 
 export const useSongStore = create<SongState>()(
@@ -48,7 +48,9 @@ export const useSongStore = create<SongState>()(
       setError: (error) => set({ error }),
       addToFavorites: (songId) =>
         set((state) => ({
-          favorites: state.favorites.includes(songId) ? state.favorites : [...state.favorites, songId],
+          favorites: state.favorites.includes(songId)
+            ? state.favorites
+            : [...state.favorites, songId],
         })),
       removeFromFavorites: (songId) =>
         set((state) => ({
@@ -56,10 +58,10 @@ export const useSongStore = create<SongState>()(
         })),
       addToRecentlyViewed: (songId) =>
         set((state) => {
-          const filtered = state.recentlyViewed.filter((id) => id !== songId);
+          const filtered = state.recentlyViewed.filter((id) => id !== songId)
           return {
             recentlyViewed: [songId, ...filtered].slice(0, 10),
-          };
+          }
         }),
       clearSearchResults: () => set({ searchResults: null, searchTerm: '' }),
     }),
@@ -69,21 +71,21 @@ export const useSongStore = create<SongState>()(
         favorites: state.favorites,
         recentlyViewed: state.recentlyViewed,
       }),
-    }
-  )
-);
+    },
+  ),
+)
 
 interface AuthState {
-  isAuthenticated: boolean;
-  isAdmin: boolean;
-  userId: string | null;
-  username: string | null;
-  email: string | null;
-  avatarUrl: string | null;
-  setIsAuthenticated: (isAuthenticated: boolean) => void;
-  setIsAdmin: (isAdmin: boolean) => void;
-  setUserInfo: (userId: string, username: string, email: string, avatarUrl?: string) => void;
-  clearUserInfo: () => void;
+  isAuthenticated: boolean
+  isAdmin: boolean
+  userId: string | null
+  username: string | null
+  email: string | null
+  avatarUrl: string | null
+  setIsAuthenticated: (isAuthenticated: boolean) => void
+  setIsAdmin: (isAdmin: boolean) => void
+  setUserInfo: (userId: string, username: string, email: string, avatarUrl?: string) => void
+  clearUserInfo: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -111,25 +113,25 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-    }
-  )
-);
+    },
+  ),
+)
 
 interface UIState {
-  isMobileMenuOpen: boolean;
-  isAuthModalOpen: boolean;
-  authModalType: 'login' | 'register';
-  isDarkMode: boolean;
-  toasts: Array<{ id: string; message: string; type: 'success' | 'error' | 'info' }>;
-  viewMode: 'grid' | 'list';
-  setIsMobileMenuOpen: (isOpen: boolean) => void;
-  setIsAuthModalOpen: (isOpen: boolean) => void;
-  setAuthModalType: (type: 'login' | 'register') => void;
-  setDarkMode: (isDark: boolean) => void;
-  toggleDarkMode: () => void;
-  addToast: (message: string, type: 'success' | 'error' | 'info') => void;
-  removeToast: (id: string) => void;
-  setViewMode: (mode: 'grid' | 'list') => void;
+  isMobileMenuOpen: boolean
+  isAuthModalOpen: boolean
+  authModalType: 'login' | 'register'
+  isDarkMode: boolean
+  toasts: Array<{ id: string; message: string; type: 'success' | 'error' | 'info' }>
+  viewMode: 'grid' | 'list'
+  setIsMobileMenuOpen: (isOpen: boolean) => void
+  setIsAuthModalOpen: (isOpen: boolean) => void
+  setAuthModalType: (type: 'login' | 'register') => void
+  setDarkMode: (isDark: boolean) => void
+  toggleDarkMode: () => void
+  addToast: (message: string, type: 'success' | 'error' | 'info') => void
+  removeToast: (id: string) => void
+  setViewMode: (mode: 'grid' | 'list') => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -162,6 +164,6 @@ export const useUIStore = create<UIState>()(
         isDarkMode: state.isDarkMode,
         viewMode: state.viewMode,
       }),
-    }
-  )
-); 
+    },
+  ),
+)

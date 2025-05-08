@@ -1,57 +1,57 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import MainLayout from '../components/layout/MainLayout';
-import SearchBox from '../components/ui/SearchBox';
-import SongList from '../components/song/SongList';
-import { useSongs } from '../hooks/useSongs';
-import { useSongStore } from '../store/store';
-import { FiSearch, FiMusic } from 'react-icons/fi';
-import { Language } from '../types';
+import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import MainLayout from '../components/layout/MainLayout'
+import SearchBox from '../components/ui/SearchBox'
+import SongList from '../components/song/SongList'
+import { useSongs } from '../hooks/useSongs'
+import { useSongStore } from '../store/store'
+import { FiSearch, FiMusic } from 'react-icons/fi'
+import { Language } from '../types'
 
 export default function SearchPage() {
-  const searchParams = useSearchParams();
-  const query = searchParams?.get('q') || '';
-  const languageParam = searchParams?.get('language') as Language | null;
-  const { search, searchResults, loading } = useSongs();
-  const { setSearchTerm, selectedLanguage, setSelectedLanguage } = useSongStore();
+  const searchParams = useSearchParams()
+  const query = searchParams?.get('q') || ''
+  const languageParam = searchParams?.get('language') as Language | null
+  const { search, searchResults, loading } = useSongs()
+  const { setSearchTerm, selectedLanguage, setSelectedLanguage } = useSongStore()
 
   useEffect(() => {
     if (query) {
-      setSearchTerm(query);
+      setSearchTerm(query)
       if (languageParam) {
-        setSelectedLanguage(languageParam);
+        setSelectedLanguage(languageParam)
       }
     }
-  }, [query, languageParam, setSearchTerm, setSelectedLanguage]);
+  }, [query, languageParam, setSearchTerm, setSelectedLanguage])
 
   useEffect(() => {
     if (query) {
-      search(query, selectedLanguage || undefined);
+      search(query, selectedLanguage || undefined)
     }
-  }, [query, selectedLanguage, search]);
+  }, [query, selectedLanguage, search])
 
   const getLanguageDisplay = (lang: Language): string => {
-    switch(lang) {
+    switch (lang) {
       case Language.VIETNAMESE:
-        return 'Tiếng Việt';
+        return 'Tiếng Việt'
       case Language.ENGLISH:
-        return 'Tiếng Anh';
+        return 'Tiếng Anh'
       case Language.KOREAN:
-        return 'Tiếng Hàn';
+        return 'Tiếng Hàn'
       case Language.JAPANESE:
-        return 'Tiếng Nhật';
+        return 'Tiếng Nhật'
       case Language.ROMAJI:
-        return 'Tiếng Nhật (Romaji)';
+        return 'Tiếng Nhật (Romaji)'
       case Language.CHINESE:
-        return 'Tiếng Trung';
+        return 'Tiếng Trung'
       case Language.OTHER:
-        return 'Khác';
+        return 'Khác'
       default:
-        return 'Không xác định';
+        return 'Không xác định'
     }
-  };
+  }
 
   return (
     <MainLayout>
@@ -83,15 +83,17 @@ export default function SearchPage() {
 
                 {searchResults.artists.length > 0 && (
                   <div className="mt-12">
-                    <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-4">Nghệ sĩ liên quan</h3>
+                    <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-4">
+                      Nghệ sĩ liên quan
+                    </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {searchResults.artists.map((artist) => (
                         <div
                           key={artist}
                           className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-md transition-shadow"
                           onClick={() => {
-                            search(artist);
-                            setSearchTerm(artist);
+                            search(artist)
+                            setSearchTerm(artist)
                           }}
                         >
                           <div className="flex items-center">
@@ -116,18 +118,20 @@ export default function SearchPage() {
                   Thử tìm kiếm với từ khóa khác hoặc duyệt bài hát theo ngôn ngữ bên dưới.
                 </p>
                 <div className="mt-8 grid grid-cols-2 gap-4 max-w-md mx-auto">
-                  {Object.values(Language).slice(0, 4).map((lang) => (
-                    <button
-                      key={lang}
-                      className="px-4 py-2 bg-primary/10 dark:bg-primary/5 hover:bg-primary/20 rounded-md text-primary"
-                      onClick={() => {
-                        setSelectedLanguage(lang);
-                        search(query, lang);
-                      }}
-                    >
-                      {getLanguageDisplay(lang)}
-                    </button>
-                  ))}
+                  {Object.values(Language)
+                    .slice(0, 4)
+                    .map((lang) => (
+                      <button
+                        key={lang}
+                        className="px-4 py-2 bg-primary/10 dark:bg-primary/5 hover:bg-primary/20 rounded-md text-primary"
+                        onClick={() => {
+                          setSelectedLanguage(lang)
+                          search(query, lang)
+                        }}
+                      >
+                        {getLanguageDisplay(lang)}
+                      </button>
+                    ))}
                 </div>
               </div>
             )}
@@ -145,5 +149,5 @@ export default function SearchPage() {
         )}
       </div>
     </MainLayout>
-  );
-} 
+  )
+}

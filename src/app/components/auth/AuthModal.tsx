@@ -1,94 +1,94 @@
-'use client';
+'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useUIStore } from '../../store/store';
-import { FiX, FiMail, FiLock, FiUser, FiAlertCircle } from 'react-icons/fi';
-import { useAuth } from '@/app/hooks/useAuth';
-import { FcGoogle } from 'react-icons/fc';
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useUIStore } from '../../store/store'
+import { FiX, FiMail, FiLock, FiUser, FiAlertCircle } from 'react-icons/fi'
+import { useAuth } from '@/app/hooks/useAuth'
+import { FcGoogle } from 'react-icons/fc'
 
 export default function AuthModal() {
-  const { isAuthModalOpen, setIsAuthModalOpen, authModalType, setAuthModalType } = useUIStore();
-  const { register, login, signInWithGoogle } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
+  const { isAuthModalOpen, setIsAuthModalOpen, authModalType, setAuthModalType } = useUIStore()
+  const { register, login, signInWithGoogle } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const closeModal = useCallback(() => {
-    setIsAuthModalOpen(false);
-    setError(null);
-  }, [setIsAuthModalOpen, setError]);
+    setIsAuthModalOpen(false)
+    setError(null)
+  }, [setIsAuthModalOpen, setError])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        closeModal();
+        closeModal()
       }
-    };
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        closeModal();
+        closeModal()
       }
-    };
+    }
 
     if (isAuthModalOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'hidden'
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [isAuthModalOpen, closeModal]);
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [isAuthModalOpen, closeModal])
 
   const switchMode = () => {
-    setAuthModalType(authModalType === 'login' ? 'register' : 'login');
-    setError(null);
-  };
+    setAuthModalType(authModalType === 'login' ? 'register' : 'login')
+    setError(null)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
     try {
       if (authModalType === 'register') {
-        await register(email, password, displayName);
+        await register(email, password, displayName)
       } else {
-        await login(email, password);
+        await login(email, password)
       }
-      closeModal();
+      closeModal()
     } catch (err) {
-      setError((err as Error).message);
+      setError((err as Error).message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleGoogleSignIn = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      await signInWithGoogle();
-      closeModal();
+      setLoading(true)
+      setError(null)
+      await signInWithGoogle()
+      closeModal()
     } catch (err) {
-      setError((err as Error).message);
+      setError((err as Error).message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  if (!isAuthModalOpen) return null;
+  if (!isAuthModalOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-      <div 
+      <div
         ref={modalRef}
         className="bg-card relative rounded-lg shadow-xl w-full max-w-md mx-auto animate-slide-up overflow-hidden"
       >
@@ -107,10 +107,9 @@ export default function AuthModal() {
             {authModalType === 'login' ? 'Đăng nhập' : 'Đăng ký tài khoản'}
           </h2>
           <p className="text-muted-foreground text-sm mb-6">
-            {authModalType === 'login' 
-              ? 'Đăng nhập để sử dụng đầy đủ tính năng' 
-              : 'Tạo tài khoản để truy cập vào tất cả tính năng'
-            }
+            {authModalType === 'login'
+              ? 'Đăng nhập để sử dụng đầy đủ tính năng'
+              : 'Tạo tài khoản để truy cập vào tất cả tính năng'}
           </p>
 
           {error && (
@@ -190,9 +189,7 @@ export default function AuthModal() {
                 className="text-primary hover:underline font-medium"
                 onClick={switchMode}
               >
-                {authModalType === 'login'
-                  ? 'Tạo tài khoản mới'
-                  : 'Đã có tài khoản'}
+                {authModalType === 'login' ? 'Tạo tài khoản mới' : 'Đã có tài khoản'}
               </button>
               {authModalType === 'login' && (
                 <button type="button" className="text-primary hover:underline font-medium">
@@ -201,16 +198,8 @@ export default function AuthModal() {
               )}
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary w-full py-2"
-              disabled={loading}
-            >
-              {loading
-                ? 'Đang xử lý...'
-                : authModalType === 'login'
-                ? 'Đăng nhập'
-                : 'Đăng ký'}
+            <button type="submit" className="btn btn-primary w-full py-2" disabled={loading}>
+              {loading ? 'Đang xử lý...' : authModalType === 'login' ? 'Đăng nhập' : 'Đăng ký'}
             </button>
           </form>
 
@@ -220,9 +209,7 @@ export default function AuthModal() {
                 <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-card text-muted-foreground">
-                  Hoặc tiếp tục với
-                </span>
+                <span className="px-2 bg-card text-muted-foreground">Hoặc tiếp tục với</span>
               </div>
             </div>
 
@@ -238,15 +225,14 @@ export default function AuthModal() {
               </button>
             </div>
           </div>
-          
+
           <p className="mt-6 text-xs text-center text-muted-foreground">
-            {authModalType === 'login' 
-              ? 'Khi đăng nhập, bạn đồng ý với các Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.' 
-              : 'Bằng cách đăng ký, bạn đồng ý với các Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.'
-            }
+            {authModalType === 'login'
+              ? 'Khi đăng nhập, bạn đồng ý với các Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.'
+              : 'Bằng cách đăng ký, bạn đồng ý với các Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.'}
           </p>
         </div>
       </div>
     </div>
-  );
-} 
+  )
+}

@@ -1,62 +1,64 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import MainLayout from '@/app/components/layout/MainLayout';
-import SongList from '@/app/components/song/SongList';
-import SearchBox from '@/app/components/ui/SearchBox';
-import { useSongs } from '@/app/hooks/useSongs';
-import { Language } from '@/app/types';
-import { FiFilter, FiChevronDown } from 'react-icons/fi';
-import { useSongStore } from '@/app/store/store';
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import MainLayout from '@/app/components/layout/MainLayout'
+import SongList from '@/app/components/song/SongList'
+import SearchBox from '@/app/components/ui/SearchBox'
+import { useSongs } from '@/app/hooks/useSongs'
+import { Language } from '@/app/types'
+import { FiFilter, FiChevronDown } from 'react-icons/fi'
+import { useSongStore } from '@/app/store/store'
 
 export default function SongsPage() {
-  const searchParams = useSearchParams();
-  const languageParam = searchParams?.get('language') as Language | null;
-  const { fetchSongs, songs } = useSongs();
-  const { selectedLanguage, setSelectedLanguage } = useSongStore();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const searchParams = useSearchParams()
+  const languageParam = searchParams?.get('language') as Language | null
+  const { fetchSongs, songs } = useSongs()
+  const { selectedLanguage, setSelectedLanguage } = useSongStore()
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   useEffect(() => {
-    fetchSongs();
-  }, [fetchSongs]);
+    fetchSongs()
+  }, [fetchSongs])
 
   useEffect(() => {
     if (languageParam) {
-      setSelectedLanguage(languageParam);
+      setSelectedLanguage(languageParam)
     }
-  }, [languageParam, setSelectedLanguage]);
+  }, [languageParam, setSelectedLanguage])
 
   const filteredSongs = selectedLanguage
     ? songs.filter((song) => song.language === selectedLanguage)
-    : songs;
+    : songs
 
   const getLanguageDisplay = (lang: Language): string => {
-    switch(lang) {
+    switch (lang) {
       case Language.VIETNAMESE:
-        return 'Tiếng Việt';
+        return 'Tiếng Việt'
       case Language.ENGLISH:
-        return 'Tiếng Anh';
+        return 'Tiếng Anh'
       case Language.KOREAN:
-        return 'Tiếng Hàn';
+        return 'Tiếng Hàn'
       case Language.JAPANESE:
-        return 'Tiếng Nhật';
+        return 'Tiếng Nhật'
       case Language.ROMAJI:
-        return 'Tiếng Nhật (Romaji)';
+        return 'Tiếng Nhật (Romaji)'
       case Language.CHINESE:
-        return 'Tiếng Trung';
+        return 'Tiếng Trung'
       case Language.OTHER:
-        return 'Khác';
+        return 'Khác'
       default:
-        return 'Không xác định';
+        return 'Không xác định'
     }
-  };
+  }
 
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Danh sách bài hát</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+            Danh sách bài hát
+          </h1>
           <SearchBox className="mb-4" />
 
           <div className="mt-4">
@@ -65,8 +67,10 @@ export default function SongsPage() {
               className="flex items-center text-gray-600 dark:text-gray-300 hover:text-primary"
             >
               <FiFilter className="mr-2" />
-                <span>Lọc theo</span>
-              <FiChevronDown className={`ml-1 transition-transform ${isFilterOpen ? 'transform rotate-180' : ''}`} />
+              <span>Lọc theo</span>
+              <FiChevronDown
+                className={`ml-1 transition-transform ${isFilterOpen ? 'transform rotate-180' : ''}`}
+              />
             </button>
 
             {isFilterOpen && (
@@ -101,9 +105,9 @@ export default function SongsPage() {
 
         <div>
           {selectedLanguage ? (
-            <SongList 
-              initialSongs={filteredSongs} 
-              title={`Bài hát ${getLanguageDisplay(selectedLanguage)}`} 
+            <SongList
+              initialSongs={filteredSongs}
+              title={`Bài hát ${getLanguageDisplay(selectedLanguage)}`}
               emptyMessage={`Không có bài hát ${getLanguageDisplay(selectedLanguage)} nào.`}
             />
           ) : (
@@ -112,5 +116,5 @@ export default function SongsPage() {
         </div>
       </div>
     </MainLayout>
-  );
-} 
+  )
+}

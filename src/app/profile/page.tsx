@@ -1,63 +1,63 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import MainLayout from '../components/layout/MainLayout';
-import { useAuth } from '../hooks/useAuth';
-import { useUIStore } from '../store/store';
-import { useTheme } from '../hooks/useTheme';
-import { FiUser, FiMail, FiCalendar, FiLock, FiLogOut, FiMoon, FiSun } from 'react-icons/fi';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import MainLayout from '../components/layout/MainLayout'
+import { useAuth } from '../hooks/useAuth'
+import { useUIStore } from '../store/store'
+import { useTheme } from '../hooks/useTheme'
+import { FiUser, FiMail, FiCalendar, FiLock, FiLogOut, FiMoon, FiSun } from 'react-icons/fi'
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '../firebase/config'
 import Image from 'next/image'
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, signOut } = useAuth();
-  const router = useRouter();
-  const { setIsAuthModalOpen, setAuthModalType } = useUIStore();
-  const { toggleTheme, isDark } = useTheme();
-  const [displayName, setDisplayName] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { user, loading: authLoading, signOut } = useAuth()
+  const router = useRouter()
+  const { setIsAuthModalOpen, setAuthModalType } = useUIStore()
+  const { toggleTheme, isDark } = useTheme()
+  const [displayName, setDisplayName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) {
-      setDisplayName(user.displayName);
+      setDisplayName(user.displayName)
     }
-  }, [user]);
+  }, [user])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+    e.preventDefault()
+    if (!user) return
 
     try {
-      setSaving(true);
-      setError(null);
+      setSaving(true)
+      setError(null)
 
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { displayName });
+      const userRef = doc(db, 'users', user.uid)
+      await updateDoc(userRef, { displayName })
 
-      setSuccess(true);
+      setSuccess(true)
       setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
+        setSuccess(false)
+      }, 3000)
     } catch (err) {
-      console.error('Error updating profile:', err);
-      setError('Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại sau.');
+      console.error('Error updating profile:', err)
+      setError('Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại sau.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleLogout = async () => {
     try {
-      await signOut();
-      router.push('/');
+      await signOut()
+      router.push('/')
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Error signing out:', error)
     }
-  };
+  }
 
   if (authLoading) {
     return (
@@ -69,7 +69,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </MainLayout>
-    );
+    )
   }
 
   if (!user) {
@@ -79,15 +79,17 @@ export default function ProfilePage() {
           <div className="py-12 text-center">
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900 rounded-lg p-6 max-w-2xl mx-auto">
               <FiLock size={48} className="mx-auto text-yellow-500 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Cần đăng nhập</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Cần đăng nhập
+              </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Bạn cần đăng nhập để xem trang hồ sơ cá nhân.
               </p>
               <div className="flex justify-center space-x-4">
                 <button
                   onClick={() => {
-                    setAuthModalType('login');
-                    setIsAuthModalOpen(true);
+                    setAuthModalType('login')
+                    setIsAuthModalOpen(true)
                   }}
                   className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
                 >
@@ -104,7 +106,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </MainLayout>
-    );
+    )
   }
 
   return (
@@ -128,7 +130,9 @@ export default function ProfilePage() {
                 )}
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{user.displayName}</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {user.displayName}
+                </h2>
                 <div className="mt-1 flex items-center text-gray-500 dark:text-gray-400">
                   <FiMail className="mr-1" />
                   <span>{user.email}</span>
@@ -136,7 +140,8 @@ export default function ProfilePage() {
                 <div className="mt-1 flex items-center text-gray-500 dark:text-gray-400">
                   <FiCalendar className="mr-1" />
                   <span>
-                    Tham gia từ {new Intl.DateTimeFormat('vi-VN', { dateStyle: 'long' }).format(user.createdAt)}
+                    Tham gia từ{' '}
+                    {new Intl.DateTimeFormat('vi-VN', { dateStyle: 'long' }).format(user.createdAt)}
                   </span>
                 </div>
               </div>
@@ -148,7 +153,9 @@ export default function ProfilePage() {
           <div className="md:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Thông tin cá nhân</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Thông tin cá nhân
+                </h3>
 
                 {success && (
                   <div className="mb-4 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 p-3 rounded-md">
@@ -165,7 +172,10 @@ export default function ProfilePage() {
                 <form onSubmit={handleUpdateProfile}>
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label
+                        htmlFor="displayName"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
                         Tên hiển thị
                       </label>
                       <input
@@ -178,7 +188,10 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
                         Email
                       </label>
                       <input
@@ -217,7 +230,9 @@ export default function ProfilePage() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center">
                       {isDark ? <FiMoon className="mr-2" /> : <FiSun className="mr-2" />}
-                      <span className="text-gray-700 dark:text-gray-300">Chế độ {isDark ? 'tối' : 'sáng'}</span>
+                      <span className="text-gray-700 dark:text-gray-300">
+                        Chế độ {isDark ? 'tối' : 'sáng'}
+                      </span>
                     </div>
                     <button
                       onClick={toggleTheme}
@@ -232,7 +247,9 @@ export default function ProfilePage() {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Đăng xuất</h3>
+                <h3 className="text-lg font-medium text-red-600 dark:text-red-400 mb-4">
+                  Đăng xuất
+                </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-4">
                   Bạn sẽ được đăng xuất khỏi tài khoản hiện tại.
                 </p>
@@ -249,5 +266,5 @@ export default function ProfilePage() {
         </div>
       </div>
     </MainLayout>
-  );
-} 
+  )
+}

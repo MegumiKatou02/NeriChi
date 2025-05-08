@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useSongs } from '../../hooks/useSongs';
-import SongCard from './SongCard';
-import { Song, Language } from '../../types';
-import { FiMusic, FiLoader, FiFilter, FiChevronDown, FiGrid, FiList } from 'react-icons/fi';
+import { useEffect, useState } from 'react'
+import { useSongs } from '../../hooks/useSongs'
+import SongCard from './SongCard'
+import { Song, Language } from '../../types'
+import { FiMusic, FiLoader, FiFilter, FiChevronDown, FiGrid, FiList } from 'react-icons/fi'
 
 interface SongListProps {
-  initialSongs?: Song[];
-  title?: string;
-  emptyMessage?: string;
-  showFilters?: boolean;
+  initialSongs?: Song[]
+  title?: string
+  emptyMessage?: string
+  showFilters?: boolean
 }
 
 export default function SongList({
@@ -19,56 +19,56 @@ export default function SongList({
   emptyMessage = 'Không có bài hát nào.',
   showFilters = false,
 }: SongListProps) {
-  const { songs, loading, error, fetchSongs } = useSongs();
-  const [displaySongs, setDisplaySongs] = useState<Song[]>([]);
-  const [language, setLanguage] = useState<Language | 'all'>('all');
-  const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showLanguageFilter, setShowLanguageFilter] = useState(false);
-  const [showSortFilter, setShowSortFilter] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const songsPerPage = 6;
+  const { songs, loading, error, fetchSongs } = useSongs()
+  const [displaySongs, setDisplaySongs] = useState<Song[]>([])
+  const [language, setLanguage] = useState<Language | 'all'>('all')
+  const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [showLanguageFilter, setShowLanguageFilter] = useState(false)
+  const [showSortFilter, setShowSortFilter] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const songsPerPage = 6
 
   useEffect(() => {
     if (!initialSongs) {
-      fetchSongs();
+      fetchSongs()
     } else {
-      setDisplaySongs(initialSongs);
+      setDisplaySongs(initialSongs)
     }
-  }, [initialSongs, fetchSongs]);
+  }, [initialSongs, fetchSongs])
 
   useEffect(() => {
     if (!initialSongs && songs) {
-      let filtered = [...songs];
-      
+      let filtered = [...songs]
+
       if (language !== 'all') {
-        filtered = filtered.filter(song => song.language === language);
+        filtered = filtered.filter((song) => song.language === language)
       }
-      
+
       if (sortBy === 'newest') {
-        filtered.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+        filtered.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
       } else if (sortBy === 'popular') {
-        filtered.sort((a, b) => b.views - a.views);
+        filtered.sort((a, b) => b.views - a.views)
       }
-      
-      setDisplaySongs(filtered);
-      setCurrentPage(1);
+
+      setDisplaySongs(filtered)
+      setCurrentPage(1)
     }
-  }, [initialSongs, songs, language, sortBy]);
+  }, [initialSongs, songs, language, sortBy])
 
-  const indexOfLastSong = currentPage * songsPerPage;
-  const indexOfFirstSong = indexOfLastSong - songsPerPage;
-  const currentSongs = displaySongs.slice(indexOfFirstSong, indexOfLastSong);
-  const totalPages = Math.ceil(displaySongs.length / songsPerPage);
+  const indexOfLastSong = currentPage * songsPerPage
+  const indexOfFirstSong = indexOfLastSong - songsPerPage
+  const currentSongs = displaySongs.slice(indexOfFirstSong, indexOfLastSong)
+  const totalPages = Math.ceil(displaySongs.length / songsPerPage)
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
   if (loading && !initialSongs) {
     return (
       <div className="flex justify-center items-center min-h-[300px]">
         <FiLoader size={30} className="animate-spin text-primary" />
       </div>
-    );
+    )
   }
 
   if (error && !initialSongs) {
@@ -76,7 +76,7 @@ export default function SongList({
       <div className="bg-destructive/10 text-destructive p-4 rounded-md">
         <p>Đã xảy ra lỗi khi tải bài hát. Vui lòng thử lại sau.</p>
       </div>
-    );
+    )
   }
 
   if (!displaySongs.length) {
@@ -85,14 +85,14 @@ export default function SongList({
         <FiMusic size={48} className="mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-medium text-foreground mb-2">{emptyMessage}</h3>
       </div>
-    );
+    )
   }
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {title && <h2 className="text-2xl font-bold text-foreground">{title}</h2>}
-        
+
         {showFilters && (
           <div className="flex flex-wrap gap-2 items-center">
             <div className="flex border  rounded-md overflow-hidden">
@@ -111,7 +111,7 @@ export default function SongList({
                 <FiList size={18} />
               </button>
             </div>
-            
+
             <div className="relative">
               <button
                 onClick={() => setShowLanguageFilter(!showLanguageFilter)}
@@ -121,25 +121,25 @@ export default function SongList({
                 <span>Ngôn ngữ</span>
                 <FiChevronDown size={16} />
               </button>
-              
+
               {showLanguageFilter && (
                 <div className="absolute right-0 mt-1 w-48 bg-card rounded-md shadow-lg z-10 border  animate-fade-in">
                   <div className="py-1">
                     <button
                       onClick={() => {
-                        setLanguage('all');
-                        setShowLanguageFilter(false);
+                        setLanguage('all')
+                        setShowLanguageFilter(false)
                       }}
                       className={`flex w-full px-4 py-2 text-sm hover:bg-muted ${language === 'all' ? 'text-primary' : 'text-foreground'}`}
                     >
                       Tất cả
                     </button>
-                    {Object.values(Language).map(lang => (
+                    {Object.values(Language).map((lang) => (
                       <button
                         key={lang}
                         onClick={() => {
-                          setLanguage(lang);
-                          setShowLanguageFilter(false);
+                          setLanguage(lang)
+                          setShowLanguageFilter(false)
                         }}
                         className={`flex w-full px-4 py-2 text-sm hover:bg-muted ${language === lang ? 'text-primary' : 'text-foreground'}`}
                       >
@@ -155,7 +155,7 @@ export default function SongList({
                 </div>
               )}
             </div>
-            
+
             <div className="relative">
               <button
                 onClick={() => setShowSortFilter(!showSortFilter)}
@@ -164,14 +164,14 @@ export default function SongList({
                 <span>Sắp xếp</span>
                 <FiChevronDown size={16} />
               </button>
-              
+
               {showSortFilter && (
                 <div className="absolute right-0 mt-1 w-48 bg-card rounded-md shadow-lg z-10 border  animate-fade-in">
                   <div className="py-1">
                     <button
                       onClick={() => {
-                        setSortBy('newest');
-                        setShowSortFilter(false);
+                        setSortBy('newest')
+                        setShowSortFilter(false)
                       }}
                       className={`flex w-full px-4 py-2 text-sm hover:bg-muted ${sortBy === 'newest' ? 'text-primary' : 'text-foreground'}`}
                     >
@@ -179,8 +179,8 @@ export default function SongList({
                     </button>
                     <button
                       onClick={() => {
-                        setSortBy('popular');
-                        setShowSortFilter(false);
+                        setSortBy('popular')
+                        setShowSortFilter(false)
                       }}
                       className={`flex w-full px-4 py-2 text-sm hover:bg-muted ${sortBy === 'popular' ? 'text-primary' : 'text-foreground'}`}
                     >
@@ -193,7 +193,7 @@ export default function SongList({
           </div>
         )}
       </div>
-      
+
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentSongs.map((song) => (
@@ -207,7 +207,7 @@ export default function SongList({
           ))}
         </div>
       )}
-      
+
       {displaySongs.length > songsPerPage && (
         <div className="mt-8 flex justify-center">
           <nav className="flex items-center space-x-2">
@@ -218,7 +218,7 @@ export default function SongList({
             >
               Trước
             </button>
-            
+
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
@@ -232,7 +232,7 @@ export default function SongList({
                 {i + 1}
               </button>
             ))}
-            
+
             <button
               onClick={() => paginate(currentPage < totalPages ? currentPage + 1 : totalPages)}
               disabled={currentPage === totalPages}
@@ -244,5 +244,5 @@ export default function SongList({
         </div>
       )}
     </div>
-  );
-} 
+  )
+}

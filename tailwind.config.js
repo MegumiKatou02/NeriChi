@@ -1,48 +1,45 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx}', './src/app/**/*.{js,ts,jsx,tsx,mdx}'],
   darkMode: 'media',
   theme: {
     extend: {
       colors: {
         background: {
-          DEFAULT: "hsl(0, 0%, 100%)",
-          dark: "hsl(240, 10%, 10%)",
+          DEFAULT: 'hsl(0, 0%, 100%)',
+          dark: 'hsl(240, 10%, 10%)',
         },
         foreground: {
-          DEFAULT: "hsl(240, 10%, 10%)",
-          dark: "hsl(0, 0%, 98%)",
+          DEFAULT: 'hsl(240, 10%, 10%)',
+          dark: 'hsl(0, 0%, 98%)',
         },
         primary: {
-          DEFAULT: "hsl(252, 80%, 60%)",
-          foreground: "hsl(0, 0%, 98%)",
+          DEFAULT: 'hsl(252, 80%, 60%)',
+          foreground: 'hsl(0, 0%, 98%)',
         },
         secondary: {
-          DEFAULT: "hsl(240, 5%, 90%)",
-          foreground: "hsl(240, 10%, 10%)",
+          DEFAULT: 'hsl(240, 5%, 90%)',
+          foreground: 'hsl(240, 10%, 10%)',
         },
         accent: {
-          DEFAULT: "hsl(328, 85%, 55%)",
-          foreground: "hsl(0, 0%, 98%)",
+          DEFAULT: 'hsl(328, 85%, 55%)',
+          foreground: 'hsl(0, 0%, 98%)',
         },
         muted: {
-          DEFAULT: "hsl(240, 5%, 96%)",
-          foreground: "hsl(240, 4%, 46%)",
-          dark: "hsl(240, 5%, 26%)",
+          DEFAULT: 'hsl(240, 5%, 96%)',
+          foreground: 'hsl(240, 4%, 46%)',
+          dark: 'hsl(240, 5%, 26%)',
         },
         card: {
-          DEFAULT: "hsl(0, 0%, 100%)",
-          foreground: "hsl(240, 10%, 10%)",
-          dark: "hsl(240, 10%, 15%)",
+          DEFAULT: 'hsl(0, 0%, 100%)',
+          foreground: 'hsl(240, 10%, 10%)',
+          dark: 'hsl(240, 10%, 15%)',
         },
-        border: "hsl(240, 5%, 84%)",
-        input: "hsl(240, 5%, 90%)",
+        border: 'hsl(240, 5%, 84%)',
+        input: 'hsl(240, 5%, 90%)',
         destructive: {
-          DEFAULT: "hsl(0, 84%, 60%)",
-          foreground: "hsl(0, 0%, 98%)",
+          DEFAULT: 'hsl(0, 84%, 60%)',
+          foreground: 'hsl(0, 0%, 98%)',
         },
       },
       borderRadius: {
@@ -63,4 +60,4 @@ module.exports = {
     },
   },
   plugins: [],
-};
+}

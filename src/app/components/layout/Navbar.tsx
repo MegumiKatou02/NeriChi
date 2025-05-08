@@ -1,81 +1,96 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../hooks/useAuth';
-import { FiSun, FiMoon, FiMenu, FiX, FiSearch, FiUser, FiHeart, FiLogOut, FiPlus, FiHome, FiMusic, FiBarChart2 } from 'react-icons/fi';
-import { useUIStore } from '../../store/store';
-import Image from 'next/image';
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '../../hooks/useAuth'
+import {
+  FiSun,
+  FiMoon,
+  FiMenu,
+  FiX,
+  FiSearch,
+  FiUser,
+  FiHeart,
+  FiLogOut,
+  FiPlus,
+  FiHome,
+  FiMusic,
+  FiBarChart2,
+} from 'react-icons/fi'
+import { useUIStore } from '../../store/store'
+import Image from 'next/image'
 
 export default function Navbar() {
-  const router = useRouter();
-  const { user, signOut } = useAuth();
-  const [scrolled, setScrolled] = useState(false);
-  const { 
-    isMobileMenuOpen, 
-    setIsMobileMenuOpen, 
-    setIsAuthModalOpen, 
+  const router = useRouter()
+  const { user, signOut } = useAuth()
+  const [scrolled, setScrolled] = useState(false)
+  const {
+    isMobileMenuOpen,
+    setIsMobileMenuOpen,
+    setIsAuthModalOpen,
     setAuthModalType,
     isDarkMode,
-    toggleDarkMode
-  } = useUIStore();
-  const [searchInput, setSearchInput] = useState('');
-  const [showUserMenu, setShowUserMenu] = useState(false);
+    toggleDarkMode,
+  } = useUIStore()
+  const [searchInput, setSearchInput] = useState('')
+  const [showUserMenu, setShowUserMenu] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
-        setScrolled(true);
+        setScrolled(true)
       } else {
-        setScrolled(false);
+        setScrolled(false)
       }
-    };
+    }
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark')
     }
-  }, [isDarkMode]);
+  }, [isDarkMode])
 
   const openLoginModal = () => {
-    setAuthModalType('login');
-    setIsAuthModalOpen(true);
-  };
+    setAuthModalType('login')
+    setIsAuthModalOpen(true)
+  }
 
   const openRegisterModal = () => {
-    setAuthModalType('register');
-    setIsAuthModalOpen(true);
-  };
+    setAuthModalType('register')
+    setIsAuthModalOpen(true)
+  }
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (searchInput.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchInput)}`);
-      setSearchInput('');
+      router.push(`/search?q=${encodeURIComponent(searchInput)}`)
+      setSearchInput('')
     }
-  };
+  }
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      setShowUserMenu(false);
-      router.push('/');
+      await signOut()
+      setShowUserMenu(false)
+      router.push('/')
     } catch (error) {
-      console.error('Lỗi khi đăng xuất:', error);
+      console.error('Lỗi khi đăng xuất:', error)
     }
-  };
+  }
 
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-background/95 backdrop-blur-sm border-b border-border shadow-sm' : 'bg-transparent'
+        scrolled
+          ? 'bg-background/95 backdrop-blur-sm border-b border-border shadow-sm'
+          : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -153,12 +168,14 @@ export default function Navbar() {
                   <FiMoon className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-12" />
                 )}
               </div>
-              <span className={`absolute inset-0 rounded-full bg-muted transform scale-0 transition-transform duration-300 group-hover:scale-100 ${isDarkMode ? 'bg-orange-100/10' : 'bg-blue-100/50'}`}></span>
+              <span
+                className={`absolute inset-0 rounded-full bg-muted transform scale-0 transition-transform duration-300 group-hover:scale-100 ${isDarkMode ? 'bg-orange-100/10' : 'bg-blue-100/50'}`}
+              ></span>
             </button>
 
             {user ? (
               <div className="relative">
-                <button 
+                <button
                   className="flex items-center space-x-2 rounded-full focus:outline-none"
                   onClick={() => setShowUserMenu(!showUserMenu)}
                 >
@@ -176,11 +193,13 @@ export default function Navbar() {
                     )}
                   </div>
                 </button>
-                
+
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-56 bg-card rounded-md shadow-lg overflow-hidden border border-border animate-fade-in">
                     <div className="px-4 py-3 border-b border-border">
-                      <p className="text-sm font-medium text-foreground">{user.displayName || user.email}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {user.displayName || user.email}
+                      </p>
                       {user.email && (
                         <p className="text-xs text-muted-foreground mt-1 truncate">{user.email}</p>
                       )}
@@ -263,7 +282,7 @@ export default function Navbar() {
               />
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             </form>
-            
+
             <Link
               href="/"
               className="flex items-center px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-muted"
@@ -299,13 +318,15 @@ export default function Navbar() {
               </Link>
             )}
           </div>
-          
+
           <div className="pt-2 pb-3 border-t border-border">
             <div className="px-4 space-y-1">
               {user ? (
                 <>
                   <div className="px-3 py-2">
-                    <p className="text-sm font-medium text-foreground">{user.displayName || user.email}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {user.displayName || user.email}
+                    </p>
                     {user.email && (
                       <p className="text-xs text-muted-foreground mt-1 truncate">{user.email}</p>
                     )}
@@ -328,8 +349,8 @@ export default function Navbar() {
                   </Link>
                   <button
                     onClick={() => {
-                      handleSignOut();
-                      setIsMobileMenuOpen(false);
+                      handleSignOut()
+                      setIsMobileMenuOpen(false)
                     }}
                     className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-muted"
                   >
@@ -341,8 +362,8 @@ export default function Navbar() {
                 <div className="flex flex-col space-y-2 px-3 py-2">
                   <button
                     onClick={() => {
-                      openLoginModal();
-                      setIsMobileMenuOpen(false);
+                      openLoginModal()
+                      setIsMobileMenuOpen(false)
                     }}
                     className="btn btn-secondary text-base w-full"
                   >
@@ -350,8 +371,8 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => {
-                      openRegisterModal();
-                      setIsMobileMenuOpen(false);
+                      openRegisterModal()
+                      setIsMobileMenuOpen(false)
                     }}
                     className="btn btn-primary text-base w-full"
                   >
@@ -364,5 +385,5 @@ export default function Navbar() {
         </div>
       )}
     </header>
-  );
-} 
+  )
+}

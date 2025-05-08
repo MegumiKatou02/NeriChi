@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { FiFacebook, FiTwitter, FiInstagram, FiYoutube } from 'react-icons/fi';
+import Link from 'next/link'
+import { FiFacebook, FiTwitter, FiInstagram, FiYoutube } from 'react-icons/fi'
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear()
 
   return (
     <footer className="bg-card border-t border-border">
@@ -182,5 +182,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  );
-} 
+  )
+}

@@ -1,76 +1,80 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { FiSearch, FiX } from 'react-icons/fi';
-import { useSongs } from '../../hooks/useSongs';
-import { Language } from '../../types';
-import { useSongStore } from '../../store/store';
+import React, { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { FiSearch, FiX } from 'react-icons/fi'
+import { useSongs } from '../../hooks/useSongs'
+import { Language } from '../../types'
+import { useSongStore } from '../../store/store'
 
 interface SearchBoxProps {
-  initialQuery?: string;
-  onlyShowResults?: boolean;
-  className?: string;
+  initialQuery?: string
+  onlyShowResults?: boolean
+  className?: string
 }
 
-export default function SearchBox({ initialQuery = '', onlyShowResults = false, className = '' }: SearchBoxProps) {
-  const [query, setQuery] = useState(initialQuery);
-  const [isFocused, setIsFocused] = useState(false);
-  const searchBoxRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const { searchResults, loading, search } = useSongs();
-  const { setSearchTerm, selectedLanguage, setSelectedLanguage } = useSongStore();
-  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
+export default function SearchBox({
+  initialQuery = '',
+  onlyShowResults = false,
+  className = '',
+}: SearchBoxProps) {
+  const [query, setQuery] = useState(initialQuery)
+  const [isFocused, setIsFocused] = useState(false)
+  const searchBoxRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const { searchResults, loading, search } = useSongs()
+  const { setSearchTerm, selectedLanguage, setSelectedLanguage } = useSongStore()
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
 
   useEffect(() => {
     const timerId = setTimeout(() => {
-      setDebouncedQuery(query);
-      setSearchTerm(query);
-    }, 300);
+      setDebouncedQuery(query)
+      setSearchTerm(query)
+    }, 300)
 
-    return () => clearTimeout(timerId);
-  }, [query, setSearchTerm]);
+    return () => clearTimeout(timerId)
+  }, [query, setSearchTerm])
 
   useEffect(() => {
     if (debouncedQuery.trim().length >= 2) {
-      search(debouncedQuery, selectedLanguage || undefined);
+      search(debouncedQuery, selectedLanguage || undefined)
     }
-  }, [debouncedQuery, selectedLanguage, search]);
+  }, [debouncedQuery, selectedLanguage, search])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (searchBoxRef.current && !searchBoxRef.current.contains(event.target as Node)) {
-        setIsFocused(false);
+        setIsFocused(false)
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (query.trim()) {
-      setIsFocused(false);
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+      setIsFocused(false)
+      router.push(`/search?q=${encodeURIComponent(query)}`)
     }
-  };
+  }
 
   const handleClear = () => {
-    setQuery('');
-    setSearchTerm('');
-  };
+    setQuery('')
+    setSearchTerm('')
+  }
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const language = e.target.value === '' ? null : (e.target.value as Language);
-    setSelectedLanguage(language);
-  };
+    const language = e.target.value === '' ? null : (e.target.value as Language)
+    setSelectedLanguage(language)
+  }
 
   const handleSuggestionClick = (title: string) => {
-    setQuery(title);
-    setIsFocused(false);
-    router.push(`/search?q=${encodeURIComponent(title)}`);
-  };
+    setQuery(title)
+    setIsFocused(false)
+    router.push(`/search?q=${encodeURIComponent(title)}`)
+  }
 
   return (
     <div ref={searchBoxRef} className={`relative ${className}`}>
@@ -142,5 +146,5 @@ export default function SearchBox({ initialQuery = '', onlyShowResults = false, 
         </div>
       )}
     </div>
-  );
-} 
+  )
+}
