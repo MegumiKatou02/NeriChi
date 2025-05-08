@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useUIStore } from '../../store/store';
 import { FiX, FiMail, FiLock, FiUser, FiAlertCircle } from 'react-icons/fi';
 import { useAuth } from '@/app/hooks/useAuth';
@@ -15,6 +15,11 @@ export default function AuthModal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const closeModal = useCallback(() => {
+    setIsAuthModalOpen(false);
+    setError(null);
+  }, [setIsAuthModalOpen, setError]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -40,12 +45,7 @@ export default function AuthModal() {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [isAuthModalOpen]);
-
-  const closeModal = () => {
-    setIsAuthModalOpen(false);
-    setError(null);
-  };
+  }, [isAuthModalOpen, closeModal]);
 
   const switchMode = () => {
     setAuthModalType(authModalType === 'login' ? 'register' : 'login');
