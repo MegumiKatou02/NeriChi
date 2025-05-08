@@ -7,6 +7,7 @@ import { Song } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { useSongs } from '../../hooks/useSongs';
 import { useUIStore } from '../../store/store';
+import ContributorAvatars from '../shared/ContributorAvatars';
 
 interface SongCardProps {
   song: Song;
@@ -44,7 +45,7 @@ export default function SongCard({ song }: SongCardProps) {
     try {
       setIsSaving(true);
       await saveFavoriteSong(song.id);
-      setIsFavorite(!isFavorite); // Toggle favorite status
+      setIsFavorite(!isFavorite);
     } catch (error) {
       console.error('Lỗi khi lưu bài hát:', error);
     } finally {
@@ -100,6 +101,17 @@ export default function SongCard({ song }: SongCardProps) {
               <p className="text-muted-foreground truncate">{song.artist}</p>
             </div>
           </div>
+          
+          {song.contributors && song.contributors.length > 0 && (
+            <div className="mt-4 ml-16">
+              <div className="flex justify-between items-center">
+                <div className="text-xs text-muted-foreground">
+                  Người đóng góp:
+                </div>
+                <ContributorAvatars contributors={song.contributors} size="sm" maxDisplay={4} />
+              </div>
+            </div>
+          )}
         </div>
         
         <div className="px-5 py-4 bg-muted dark:bg-card border-t  flex justify-between items-center">

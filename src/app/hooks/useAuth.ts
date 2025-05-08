@@ -1,17 +1,47 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/app/firebase/config'
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { User } from '../types';
 import { loginWithEmail, loginWithGoogle, logout, registerWithEmail } from '@/app/firebase/services';
 
+const userCache = new Map<string, User>();
+
 export function useAuth() {
     const [authUser, authLoading, authError] = useAuthState(auth);
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const [error, setError] = useState<Error | undefined>(undefined);
+    
+    const [usersMap, setUsersMap] = useState<Map<string, User>>(new Map());
+
+    const getUserInfo = useCallback(async (userId: string): Promise<User | null> => {
+        if (userCache.has(userId)) {
+            return userCache.get(userId) || null;
+        }
+
+        try {
+            const userRef = doc(db, 'users', userId);
+            const userDoc = await getDoc(userRef);
+
+            if (userDoc.exists()) {
+                const userData = {
+                    uid: userId,
+                    ...userDoc.data(),
+                    createdAt: userDoc.data().createdAt?.toDate(),
+                } as User;
+                
+                userCache.set(userId, userData);
+                return userData;
+            }
+            return null;
+        } catch (err) {
+            console.error("Error fetching user:", err);
+            return null;
+        }
+    }, []);
 
     useEffect(() => {
         async function fetchUserData() {
@@ -108,5 +138,6 @@ export function useAuth() {
         signInWithGoogle,
         signOut,
         isAdmin: user?.isAdmin || false,
+        getUserInfo,
     };
 } 

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { FiCopy, FiHeart, FiShare2, FiEye, FiFlag } from 'react-icons/fi';
+import { FiCopy, FiHeart, FiShare2, FiEye, FiFlag, FiUsers } from 'react-icons/fi';
 import { Song, Language } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { useSongs } from '../../hooks/useSongs';
+import ContributorAvatars from '../shared/ContributorAvatars';
 
 const languageDisplay: Record<Language, string> = {
   [Language.VIETNAMESE]: 'Tiếng Việt',
@@ -156,6 +157,18 @@ export default function SongDetail({ song }: SongDetailProps) {
         <div className="whitespace-pre-line text-lg text-gray-900 dark:text-gray-100 mb-8 leading-7">
           {song.lyrics}
         </div>
+
+        {song.contributors && song.contributors.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center mb-3">
+              <FiUsers className="text-gray-500 dark:text-gray-400 mr-2" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Người đóng góp</h3>
+            </div>
+            <div className="flex items-center">
+              <ContributorAvatars contributors={song.contributors} maxDisplay={8} size="md" />
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-8">
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">

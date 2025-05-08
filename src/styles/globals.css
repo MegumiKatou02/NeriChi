@@ -162,7 +162,6 @@
   }
 }
 
-/* Animations */
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.3s ease-in-out;
