@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true, id: docRef.id });
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const snapshot = await getDocs(collection(db, 'pendingSongs'));
   
   const songs = snapshot.docs.map(doc => ({

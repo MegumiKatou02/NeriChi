@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react';
 import { Language, Song, SearchResult } from '../types';
 import { 
-  addSong, 
   getSongById, 
   getSongs, 
   saveSong, 
@@ -91,7 +90,11 @@ export function useSongs() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(song),
-      });      
+      });     
+      
+      if (!response.ok) {
+        throw new Error('Lỗi khi thêm bài hát vào danh sách chờ');
+      }
 
     } catch (err) {
       setError(err as Error);
@@ -99,7 +102,7 @@ export function useSongs() {
     } finally {
       setLoading(false);
     }
-  }, [user, fetchSongs]);
+  }, [user]);
 
   const saveFavoriteSong = useCallback(async (songId: string) => {
     if (!user) throw new Error('Bạn phải đăng nhập để lưu bài hát');
