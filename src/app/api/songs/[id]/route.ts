@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/app/firebase/config';
 
-type status = 'pending' | 'approved';
-
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string; status: status } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id, status } = context.params;
-    console.log(id, status);
+    const { id } = context.params;
     
-    const songData = await req.json();
+    const { status, ...songData } = await req.json();
+
+    if (status !== 'approved' && status !== 'pending') {
+      return NextResponse.json(
+        { error: 'Invalid status' },
+        { status: 400 }
+      );
+    }
     
     const collectionName = status === 'approved' ? 'songs' : 'pendingSongs';
     const songRef = doc(db, collectionName, id);
@@ -42,10 +46,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const { id } = context.params;
     const { collection: collectionName } = await req.json();
     
     if (collectionName !== 'songs' && collectionName !== 'pendingSongs') {
