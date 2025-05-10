@@ -362,10 +362,6 @@ export async function getUserFavorites(userId: string): Promise<Song[]> {
     const q = query(songsCollection, where('__name__', 'in', savedSongs))
 
     const querySnapshot = await getDocs(q)
-    console.log(
-      'querySnapshot',
-      querySnapshot.docs.map((doc) => doc.data()),
-    )
     const songs: Song[] = []
 
     querySnapshot.forEach((doc) => {

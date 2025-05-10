@@ -2,7 +2,7 @@
 
 **NeriChi** is a modern platform for searching, saving, and sharing song lyrics, supporting multiple languages. Built with Next.js, Firebase, Chakra UI, and Tailwind CSS.
 
-## 🚀 Key Features
+## 🌟 Key Features
 
 - **Lyrics Search**: Fast and accurate search by song title, artist, or lyrics snippet.
 - **Save Favorites**: Log in to save your favorite songs for easy access anytime.
@@ -12,7 +12,7 @@
 - **Account Management**: Update personal information and manage saved songs.
 - **Admin Panel**: Review, approve, or reject user-submitted songs.
 
-## 🖼️ Interface
+## 🎨 Interface
 
 - Modern design with dark/light mode support.
 - Responsive and optimized for both desktop and mobile devices.
@@ -30,31 +30,31 @@
 
 ## ⚡️ Installation & Setup
 
-1.  **Clone the repository:**
+1. **Clone repository:**
 
-    ```bash
-    git clone https://github.com/MegumiKatou02/NeriChi.git
-    cd lyrics-next
-    ```
+   ```bash
+   git clone https://github.com/MegumiKatou02/NeriChi.git
+   cd lyrics-next
+   ```
 
-2.  **Install dependencies:**
+2. **Install dependencies:**
 
-    ```bash
-    yarn install
-    # or npm install
-    ```
+   ```bash
+   yarn install
+   # or npm install
+   ```
 
-3.  **Configure environment variables:**
+3. **Configure environment variables:**
 
-    - Create a `.env.local` file based on the `.env` template.
-    - Fill in your Firebase project credentials.
+   - Create a `.env.local` file based on the `.env` template.
+   - Fill in your Firebase project credentials.
 
-4.  **Run the development server:**
-    ```bash
-    yarn dev
-    # or npm run dev
-    ```
-    Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. **Run the development server:**
+   ```bash
+   yarn dev
+   # or npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📝 Contributing Lyrics
 

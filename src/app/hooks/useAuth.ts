@@ -87,8 +87,6 @@ export function useAuth() {
 
   async function register(email: string, password: string, displayName: string) {
     try {
-      console.log(displayName)
-
       const userCredential = await registerWithEmail(email, password)
       return userCredential
     } catch (err) {

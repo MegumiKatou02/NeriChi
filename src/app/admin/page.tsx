@@ -40,15 +40,12 @@ export default function AdminPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         if (user.uid === adminUid) {
-          console.log('Admin UID:', user.uid)
           fetchSongs()
           fetchLyricsReports()
         } else {
-          console.log('User is not admin')
           router.push('/profile')
         }
       } else {
-        console.log('User not logged in')
         router.push('/profile')
       }
       setLoading(false)
@@ -248,7 +245,6 @@ export default function AdminPage() {
 
     try {
       setLoading(true)
-      console.log(editingSong)
 
       const res = await fetch(`/api/songs/${editingSong.id}`, {
         method: 'PUT',
