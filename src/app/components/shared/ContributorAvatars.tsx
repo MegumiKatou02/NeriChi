@@ -91,7 +91,7 @@ export default function ContributorAvatars({
               />
             ) : (
               <div
-                className={`${sizeCls} rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold`}
+                className={`${sizeCls} rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold border border-white`}
               >
                 {user && user.displayName ? user.displayName.charAt(0).toUpperCase() : '?'}
               </div>
@@ -102,7 +102,7 @@ export default function ContributorAvatars({
 
       {remainingCount > 0 && (
         <div
-          className={`${offsetCls} ${sizeCls} rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-medium border-2 border-background dark:border-gray-800 relative`}
+          className={`${offsetCls} ${sizeCls} rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-medium border-2 border-background dark:border-gray-800 relative border border-white`}
           style={{ zIndex: 0 }}
         >
           +{remainingCount}
