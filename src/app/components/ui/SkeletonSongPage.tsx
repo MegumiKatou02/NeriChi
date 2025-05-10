@@ -1,4 +1,6 @@
 export default function SkeletonSongPage() {
+  const lineWidths = [74, 68, 63, 80, 65, 57, 86, 59, 45, 50, 77, 42, 62, 55, 46]
+
   return (
     <div className="container mx-auto py-6 animate-pulse">
       <div className="mb-8">
@@ -18,7 +20,7 @@ export default function SkeletonSongPage() {
             <div
               key={index}
               className="h-4 bg-secondary rounded"
-              style={{ width: `${Math.floor(Math.random() * 60) + 40}%` }}
+              style={{ width: `${lineWidths[index % lineWidths.length]}%` }}
             ></div>
           ))}
         </div>

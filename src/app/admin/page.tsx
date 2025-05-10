@@ -6,17 +6,7 @@ import type { Song } from '../types'
 import { auth, db } from '../firebase/config'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  updateDoc,
-  doc,
-  orderBy,
-  deleteDoc,
-  getDoc,
-} from 'firebase/firestore'
+import { updateDoc, doc, deleteDoc } from 'firebase/firestore'
 
 interface LyricsReport {
   id: string
