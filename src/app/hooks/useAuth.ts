@@ -15,8 +15,6 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | undefined>(undefined)
 
-  const [usersMap, setUsersMap] = useState<Map<string, User>>(new Map())
-
   const getUserInfo = useCallback(async (userId: string): Promise<User | null> => {
     if (userCache.has(userId)) {
       return userCache.get(userId) || null

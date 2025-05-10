@@ -6,6 +6,7 @@ import { User } from '@/app/types'
 import UserProfile from '@/app/components/user/UserProfile'
 import Image from 'next/image'
 import { FiCalendar, FiUser } from 'react-icons/fi'
+import Link from 'next/link'
 
 interface UserPageProps {
   params: {
@@ -134,12 +135,12 @@ export default async function UserPage({ params }: UserPageProps) {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Không thể tải thông tin người dùng. Vui lòng thử lại sau.
           </p>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
             Quay về trang chủ
-          </a>
+          </Link>
         </div>
       </div>
     )

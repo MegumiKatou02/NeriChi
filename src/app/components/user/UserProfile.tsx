@@ -1,9 +1,7 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { FiCalendar, FiMusic, FiHeart, FiUser } from 'react-icons/fi'
+import { FiMusic, FiHeart } from 'react-icons/fi'
 import { User } from '@/app/types'
 import { useSongs } from '@/app/hooks/useSongs'
 import { Song } from '@/app/types'
@@ -37,12 +35,6 @@ export default function UserProfile({ user }: UserProfileProps) {
 
     fetchUserSongs()
   }, [user.uid, getUserSongs, getUserFavorites])
-
-  const memberSince = new Date(user.createdAt).toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
 
   return (
     <div>
