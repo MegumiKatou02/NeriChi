@@ -177,11 +177,20 @@ export default function AdminPage() {
     try {
       setLoading(true)
 
+      const report = lyricsReports.find((r) => r.id === reportId)
       const reportRef = doc(db, 'lyricsReports', reportId)
       await updateDoc(reportRef, {
         status: newStatus,
         updatedAt: new Date(),
       })
+
+      if (newStatus === 'resolved' && report && report.songId && report.reporterId) {
+        await fetch(`/api/songs/${report.songId}/add-contributor`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: report.reporterId }),
+        })
+      }
 
       setLyricsReports((prev) =>
         prev.map((report) =>
