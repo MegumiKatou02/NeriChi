@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     await setDoc(approvedSongRef, {
       ...songData,
       approved: true,
+      createdAt: songData.createdAt || serverTimestamp(),
       updatedAt: serverTimestamp(),
     })
 

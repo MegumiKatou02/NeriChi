@@ -33,10 +33,21 @@ export async function GET(req: NextRequest) {
 
     const snapshot = await getDocs(q)
 
-    const songs = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
+    const songs = snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        ...data,
+        createdAt:
+          data.createdAt && typeof data.createdAt.toDate === 'function'
+            ? data.createdAt.toDate().toISOString()
+            : null,
+        updatedAt:
+          data.updatedAt && typeof data.updatedAt.toDate === 'function'
+            ? data.updatedAt.toDate().toISOString()
+            : null,
+      }
+    })
 
     return NextResponse.json(songs)
   } catch (error) {

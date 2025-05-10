@@ -19,12 +19,21 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   const snapshot = await getDocs(collection(db, 'pendingSongs'))
 
-  const songs = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }))
-
-  console.log(songs)
+  const songs = snapshot.docs.map((doc) => {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      ...data,
+      createdAt:
+        data.createdAt && typeof data.createdAt.toDate === 'function'
+          ? data.createdAt.toDate().toISOString()
+          : null,
+      updatedAt:
+        data.updatedAt && typeof data.updatedAt.toDate === 'function'
+          ? data.updatedAt.toDate().toISOString()
+          : null,
+    }
+  })
 
   return NextResponse.json(songs)
 }
