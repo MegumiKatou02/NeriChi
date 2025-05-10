@@ -217,11 +217,9 @@ export default function AdminPage() {
     try {
       setLoading(true)
 
-      // Xóa báo cáo từ Firestore
       const reportRef = doc(db, 'lyricsReports', reportId)
       await deleteDoc(reportRef)
 
-      // Cập nhật state
       setLyricsReports((prev) => prev.filter((report) => report.id !== reportId))
 
       setSuccessMessage('Report deleted successfully')

@@ -18,7 +18,6 @@ export function Providers({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setMounted(true)
-    // Xóa theme của ChakraUI trong localStorage
     localStorage.removeItem('chakra-ui-color-mode')
   }, [])
 

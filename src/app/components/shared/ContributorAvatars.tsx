@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-// import Link from 'next/link';
 import Image from 'next/image'
 import { useAuth } from '../../hooks/useAuth'
 import { User } from '../../types'
@@ -79,7 +78,6 @@ export default function ContributorAvatars({
           <div
             key={userId}
             onClick={() => router.push(`/users/${userId}`)}
-            // className={`${index > 0 ? offsetCls : ''} block ${sizeCls} rounded-full border-2 border-background dark:border-gray-800 transition-transform hover:transform hover:scale-110 hover:z-10 relative cursor-pointer`}
             className={`${index > 0 ? offsetCls : ''} block ${sizeCls} transition-transform hover:transform hover:scale-110 hover:z-10 relative cursor-pointer object-cover`}
             style={{ zIndex: displayContributors.length - index }}
           >

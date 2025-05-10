@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import MainLayout from './components/layout/MainLayout'
 // import SearchBox from './components/ui/SearchBox';
@@ -8,15 +8,61 @@ import SongList from '@/app/components/song/SongList'
 import { useSongs } from '@/app/hooks/useSongs'
 import { FiMusic, FiSearch, FiHeart, FiGlobe } from 'react-icons/fi'
 import { Language } from './types'
+import SongCard from './components/song/SongCard'
+import { Song } from './types'
+import SkeletonCard from './components/ui/SkeletonCard'
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter()
-  const { fetchSongs, songs } = useSongs()
+  const { fetchSongs } = useSongs()
+  const [songs, setSongs] = useState<Song[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-
+  
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const songsPerPage = 6 
+  
   useEffect(() => {
-    fetchSongs()
-  }, [fetchSongs])
+    const fetchLatestSongs = async () => {
+      try {
+        setLoading(true)
+        const response = await fetchSongs()
+        
+        const totalSongs = response.length
+        const calculatedTotalPages = Math.ceil(totalSongs / songsPerPage)
+        setTotalPages(calculatedTotalPages)
+        
+        const startIndex = (currentPage - 1) * songsPerPage
+        const endIndex = startIndex + songsPerPage
+        const paginatedSongs = response.slice(startIndex, endIndex)
+        
+        setSongs(paginatedSongs)
+      } catch (error) {
+        console.error('Error fetching songs:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchLatestSongs()
+  }, [fetchSongs, currentPage, songsPerPage])
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+  
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1)
+    }
+  }
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1)
+    }
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,7 +145,79 @@ export default function Home() {
 
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <SongList title="Bài hát phổ biến" initialSongs={songs} />
+          <h1 className="text-3xl font-bold mb-8">Bài hát mới nhất</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              Array(6).fill(0).map((_, index) => (
+                <SkeletonCard key={index} />
+              ))
+            ) : (
+              songs.map((song) => (
+                <SongCard key={song.id} song={song} />
+              ))
+            )}
+          </div>
+          
+          {/* Phân trang */}
+          {!loading && totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <nav className="flex items-center gap-1">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-md ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800'
+                      : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Trước
+                </button>
+                
+                <div className="flex gap-1 mx-2">
+                  {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
+                    let pageNumber: number
+                    if (totalPages <= 5) {
+                      pageNumber = i + 1
+                    } else if (currentPage <= 3) {
+                      pageNumber = i + 1
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNumber = totalPages - 4 + i
+                    } else {
+                      pageNumber = currentPage - 2 + i
+                    }
+                    
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handlePageChange(pageNumber)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-md ${
+                          currentPage === pageNumber
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    )
+                  })}
+                </div>
+                
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-md ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800'
+                      : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Sau
+                </button>
+              </nav>
+            </div>
+          )}
         </div>
       </section>
 

@@ -126,10 +126,6 @@ export default function SongCard({ song }: SongCardProps) {
                 {song.language.charAt(0).toUpperCase() + song.language.slice(1)}
               </span>
             </div>
-            {/* <div className="flex items-center">
-              <FiHeart className="mr-1" />
-              <span>{song.likes.toLocaleString()}</span>
-            </div> */}
           </div>
 
           <div className="flex space-x-2">

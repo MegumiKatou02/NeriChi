@@ -1,43 +1,46 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Providers } from './providers'
+'use client'
+
+import { useState, useEffect, Suspense } from 'react'
+import { Inter } from 'next/font/google'
+import { Toaster } from 'sonner'
 import '../styles/globals.css'
+import Header from '@/app/components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import ThemeProvider from './components/ThemeProvider'
+import AuthModal from './components/auth/AuthModal'
+import PageSuspense from './components/ui/PageSuspense'
+import { usePathname, useSearchParams } from 'next/navigation'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
+const inter = Inter({ subsets: ['latin'] })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [isNavigating, setIsNavigating] = useState(false)
 
-export const metadata: Metadata = {
-  title: 'Nerichi - Tìm kiếm và chia sẻ lời bài hát',
-  description: 'Trang web tìm kiếm, lưu trữ và chia sẻ lời bài hát tiếng Việt và quốc tế.',
-  keywords: 'lời bài hát, lyrics, nhạc việt, bài hát, tìm kiếm lời bài hát',
-  authors: [{ name: 'Nerichi Team' }],
-  creator: 'Yukiookii',
-  icons: {
-    icon: '/favicon.ico',
-  },
-}
+  // Xử lý chuyển trang
+  useEffect(() => {
+    setIsNavigating(false)
+  }, [pathname, searchParams])
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
   return (
     <html lang="vi" suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>{children}</Providers>
+      <body className={inter.className}>
+        <ThemeProvider>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow">
+              {isNavigating ? (
+                <PageSuspense />
+              ) : (
+                <Suspense fallback={<PageSuspense />}>{children}</Suspense>
+              )}
+            </main>
+            <Footer />
+          </div>
+          <Toaster position="top-center" />
+          <AuthModal />
+        </ThemeProvider>
       </body>
     </html>
   )

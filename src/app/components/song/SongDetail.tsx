@@ -144,10 +144,6 @@ export default function SongDetail({ song }: SongDetailProps) {
             <FiEye className="mr-1" />
             <span>{song.views.toLocaleString()} lượt xem</span>
           </div>
-          {/* <div className="flex items-center">
-            <FiThumbsUp className="mr-1" />
-            <span>{song.likes.toLocaleString()} thích</span>
-          </div> */}
         </div>
         <div className="flex space-x-2">
           <button
