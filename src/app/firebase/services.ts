@@ -204,8 +204,14 @@ export const getTopSongs = async (sortBy: 'views' | 'likes' = 'views', limit_cou
       ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() ?? null,
-        updatedAt: doc.data().updatedAt?.toDate(),
+        createdAt:
+          doc.data().createdAt && typeof doc.data().createdAt.toDate === 'function'
+            ? doc.data().createdAt.toDate()
+            : null,
+        updatedAt:
+          doc.data().updatedAt && typeof doc.data().updatedAt.toDate === 'function'
+            ? doc.data().updatedAt.toDate()
+            : null,
       }) as Song,
   )
 }

@@ -30,8 +30,16 @@ export async function GET() {
           song = {
             id: reportData.songId,
             ...songData,
-            createdAt: songData.createdAt?.toDate(),
-            updatedAt: songData.updatedAt?.toDate(),
+            createdAt: songData.createdAt
+              ? typeof songData.createdAt.toDate === 'function'
+                ? songData.createdAt.toDate()
+                : songData.createdAt
+              : null,
+            updatedAt: songData.updatedAt
+              ? typeof songData.updatedAt.toDate === 'function'
+                ? songData.updatedAt.toDate()
+                : songData.updatedAt
+              : null,
           }
         }
       }
@@ -39,8 +47,16 @@ export async function GET() {
       reports.push({
         id: docSnapshot.id,
         ...reportData,
-        createdAt: reportData.createdAt?.toDate(),
-        updatedAt: reportData.updatedAt?.toDate(),
+        createdAt: reportData.createdAt
+          ? typeof reportData.createdAt.toDate === 'function'
+            ? reportData.createdAt.toDate()
+            : reportData.createdAt
+          : null,
+        updatedAt: reportData.updatedAt
+          ? typeof reportData.updatedAt.toDate === 'function'
+            ? reportData.updatedAt.toDate()
+            : reportData.updatedAt
+          : null,
         song,
       })
     }
