@@ -46,41 +46,7 @@ export default function UserProfile({ user }: UserProfileProps) {
 
   return (
     <div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
-        <div className="relative px-6 pb-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-20 mb-4 sm:mb-6">
-            <div className="text-center sm:text-left sm:ml-4">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
-                {user.displayName || 'Người dùng ẩn danh'}
-              </h1>
-              <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-2">
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <FiCalendar className="mr-1" />
-                  <span>Tham gia: {memberSince}</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <FiMusic className="mr-1" />
-                  <span>{contributedSongs.length} bài hát đã đóng góp</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <FiHeart className="mr-1" />
-                  <span>{favoriteSongs.length} bài hát yêu thích</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {user.isAdmin && (
-            <div className="mt-2 flex justify-center sm:justify-start">
-              <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary/10 text-primary">
-                Quản trị viên
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+      <div className="bg-white dark:bg-gray-800 shadow-md overflow-hidden">
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex -mb-px">
             <button
@@ -92,7 +58,7 @@ export default function UserProfile({ user }: UserProfileProps) {
               }`}
             >
               <FiMusic className="inline-block mr-2" />
-              Bài hát đã đóng góp
+              Bài hát đã đóng góp {contributedSongs.length > 0 && `(${contributedSongs.length})`}
             </button>
             <button
               onClick={() => setActiveTab('favorites')}
@@ -103,7 +69,7 @@ export default function UserProfile({ user }: UserProfileProps) {
               }`}
             >
               <FiHeart className="inline-block mr-2" />
-              Bài hát yêu thích
+              Bài hát yêu thích {favoriteSongs.length > 0 && `(${favoriteSongs.length})`}
             </button>
           </nav>
         </div>

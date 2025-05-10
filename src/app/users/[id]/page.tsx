@@ -99,9 +99,9 @@ export default async function UserPage({ params }: UserPageProps) {
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   {userData.displayName || 'Người dùng ẩn danh'}
                 </h2>
-                {userData.email && (
+                {/* {userData.email && (
                   <div className="mt-1 text-gray-500 dark:text-gray-400">{userData.email}</div>
-                )}
+                )} */}
                 <div className="mt-1 flex items-center text-gray-500 dark:text-gray-400">
                   <FiCalendar className="mr-1" />
                   <span>Tham gia: {memberSince}</span>
