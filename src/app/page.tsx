@@ -90,7 +90,7 @@ export default function HomePage() {
                 </div>
                 <input
                   type="text"
-                  className="py-3 pl-10 pr-4 w-full shadow-sm focus:ring-primary focus:border-primary block border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className="py-3 pl-10 pr-4 w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 block border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   placeholder="Tên bài hát, ca sĩ hoặc một phần lời..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -234,14 +234,17 @@ export default function HomePage() {
                   {lang === Language.ENGLISH && 'Tiếng Anh'}
                   {lang === Language.KOREAN && 'Tiếng Hàn'}
                   {lang === Language.JAPANESE && 'Tiếng Nhật'}
+                  {lang === Language.ROMAJI && 'Tiếng Nhật (Romaji)'}
                   {lang === Language.CHINESE && 'Tiếng Trung'}
                   {lang === Language.OTHER && 'Ngôn ngữ khác'}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Khám phá các bài hát {lang === Language.VIETNAMESE && 'tiếng Việt'}
+                  Khám phá các bài hát 
+                  {lang === Language.VIETNAMESE && 'tiếng Việt'}
                   {lang === Language.ENGLISH && 'tiếng Anh'}
                   {lang === Language.KOREAN && 'tiếng Hàn (K-Pop)'}
                   {lang === Language.JAPANESE && 'tiếng Nhật (J-Pop)'}
+                  {lang === Language.ROMAJI && 'tiếng Nhật (J-Pop)'}
                   {lang === Language.CHINESE && 'tiếng Trung (C-Pop)'}
                   {lang === Language.OTHER && 'nhiều ngôn ngữ khác'}
                 </p>
