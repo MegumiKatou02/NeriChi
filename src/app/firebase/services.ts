@@ -53,13 +53,15 @@ export const getSongs = async (limit_count = 20) => {
 
   const snapshot = await getDocs(q)
   return snapshot.docs.map(
-    (doc) =>
-      ({
+    (doc) => {
+      const data = doc.data();
+      return {
         id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      }) as Song,
+        ...data,
+        createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : null,
+        updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : null,
+      } as Song;
+    }
   )
 }
 
@@ -74,8 +76,8 @@ export const getSongById = async (id: string) => {
   return {
     id: songDoc.id,
     ...songDoc.data(),
-    createdAt: songDoc.data().createdAt?.toDate(),
-    updatedAt: songDoc.data().updatedAt?.toDate(),
+    createdAt: songDoc.data().createdAt?.toDate() ?? null,
+    updatedAt: songDoc.data().updatedAt?.toDate() ?? null,
   } as Song
 }
 
@@ -91,8 +93,8 @@ export const searchSongs = async (searchTerm: string, language?: Language) => {
         ({
           id: doc.id,
           ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
+          createdAt: doc.data().createdAt?.toDate() ?? null,
+          updatedAt: doc.data().updatedAt?.toDate() ?? null,
         }) as Song,
     )
     .filter((song) => {
@@ -192,7 +194,7 @@ export const getTopSongs = async (sortBy: 'views' | 'likes' = 'views', limit_cou
       ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
+        createdAt: doc.data().createdAt?.toDate() ?? null,
         updatedAt: doc.data().updatedAt?.toDate(),
       }) as Song,
   )

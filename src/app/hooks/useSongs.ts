@@ -209,6 +209,37 @@ export function useSongs() {
     }
   }, [])
 
+  const reportLyrics = useCallback(
+    async (songId: string, reportData: { reason: string; details: string }) => {
+      if (!user) throw new Error('Bạn phải đăng nhập để báo cáo lời bài hát')
+
+      setLoading(true)
+      setError(null)
+      try {
+        const user = auth.currentUser
+        if (!user) throw new Error('Bạn phải đăng nhập để thêm bài hát')
+
+        const response = await fetch('/api/report-lyrics', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ songId, reporterId: user.uid, reason: reportData.reason, details: reportData.details }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Lỗi khi thêm bài hát vào danh sách chờ')
+        }
+      } catch (err) {
+        setError(err as Error)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    [user],
+  )
+
   return {
     songs,
     currentSong,
@@ -226,5 +257,6 @@ export function useSongs() {
     removeFavoriteSong,
     getUserSongs: fetchUserSongs,
     getUserFavorites: fetchUserFavorites,
+    reportLyrics,
   }
 }
