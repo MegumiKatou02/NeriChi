@@ -1,17 +1,42 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Trash, Edit, Check, X, RefreshCw, Save, ArrowLeft } from 'lucide-react'
+import { Trash, Edit, Check, RefreshCw, Save, ArrowLeft, AlertCircle } from 'lucide-react'
 import type { Song } from '../types'
-import { auth } from '../firebase/config'
+import { auth, db } from '../firebase/config'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc,
+  orderBy,
+  deleteDoc,
+  getDoc,
+} from 'firebase/firestore'
+
+interface LyricsReport {
+  id: string
+  songId: string
+  reporterId: string
+  reason: string
+  details: string
+  status: 'pending' | 'reviewed' | 'resolved'
+  createdAt: Date
+  updatedAt: Date
+  song?: Song
+  reporterName?: string
+}
 
 export default function AdminPage() {
   type status = 'approved' | 'pending'
 
   const [pendingSongs, setPendingSongs] = useState<Song[]>([])
   const [approvedSongs, setApprovedSongs] = useState<Song[]>([])
+  const [lyricsReports, setLyricsReports] = useState<LyricsReport[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('pending')
   const [editingSong, setEditingSong] = useState<Song | null>(null)
@@ -27,6 +52,7 @@ export default function AdminPage() {
         if (user.uid === adminUid) {
           console.log('Admin UID:', user.uid)
           fetchSongs()
+          fetchLyricsReports()
         } else {
           console.log('User is not admin')
           router.push('/profile')
@@ -54,6 +80,23 @@ export default function AdminPage() {
     } catch (err) {
       console.error('Failed to fetch songs', err)
       setErrorMessage('Failed to load songs. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchLyricsReports = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/report-lyrics')
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports')
+      }
+      const reports = await response.json()
+      setLyricsReports(reports)
+    } catch (err) {
+      console.error('Failed to fetch lyrics reports', err)
+      setErrorMessage('Failed to load lyrics reports. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -127,6 +170,62 @@ export default function AdminPage() {
     }
   }
 
+  const updateReportStatus = async (
+    reportId: string,
+    newStatus: 'pending' | 'reviewed' | 'resolved',
+  ) => {
+    try {
+      setLoading(true)
+
+      const reportRef = doc(db, 'lyricsReports', reportId)
+      await updateDoc(reportRef, {
+        status: newStatus,
+        updatedAt: new Date(),
+      })
+
+      setLyricsReports((prev) =>
+        prev.map((report) =>
+          report.id === reportId ? { ...report, status: newStatus, updatedAt: new Date() } : report,
+        ),
+      )
+
+      setSuccessMessage(`Report marked as ${newStatus}`)
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (err) {
+      console.error('Error updating report status:', err)
+      setErrorMessage('Failed to update report status. Please try again.')
+      setTimeout(() => setErrorMessage(''), 3000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const deleteReport = async (reportId: string) => {
+    if (!confirm('Are you sure you want to delete this report?')) {
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      // Xóa báo cáo từ Firestore
+      const reportRef = doc(db, 'lyricsReports', reportId)
+      await deleteDoc(reportRef)
+
+      // Cập nhật state
+      setLyricsReports((prev) => prev.filter((report) => report.id !== reportId))
+
+      setSuccessMessage('Report deleted successfully')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (err) {
+      console.error('Error deleting report:', err)
+      setErrorMessage('Failed to delete report. Please try again.')
+      setTimeout(() => setErrorMessage(''), 3000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const startEditing = (song: Song, tab: status) => {
     setEditingSong({ ...song })
     setEditingTab(tab)
@@ -191,6 +290,18 @@ export default function AdminPage() {
     }
   }
 
+  const getReportReasonText = (reason: string) => {
+    const reasonMap: Record<string, string> = {
+      wrong_lyrics: 'Lời không chính xác',
+      missing_lyrics: 'Thiếu một phần lời',
+      wrong_punctuation: 'Lỗi chính tả/dấu câu',
+      wrong_formatting: 'Lỗi định dạng',
+      other: 'Lý do khác',
+    }
+
+    return reasonMap[reason] || reason
+  }
+
   if (editingSong) {
     return (
       <div className="p-4 max-w-4xl mx-auto">
@@ -253,24 +364,6 @@ export default function AdminPage() {
                 <option value="Other">Other</option>
               </select>
             </div>
-
-            <div>
-              <label className="block mb-1 font-medium">Status</label>
-              <select
-                name="approved"
-                value={editingSong.approved ? 'true' : 'false'}
-                onChange={(e) => {
-                  setEditingSong({
-                    ...editingSong,
-                    approved: e.target.value === 'true',
-                  })
-                }}
-                className="w-full border rounded p-2"
-              >
-                <option value="true">Approved</option>
-                <option value="false">Pending</option>
-              </select>
-            </div>
           </div>
 
           <div>
@@ -279,29 +372,32 @@ export default function AdminPage() {
               name="lyrics"
               value={editingSong.lyrics}
               onChange={handleEditChange}
-              rows={12}
-              className="w-full border rounded p-2"
-            />
+              rows={15}
+              className="w-full border rounded p-2 font-mono"
+            ></textarea>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-2">
             <button
               onClick={cancelEditing}
-              className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 flex items-center"
+              className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200"
             >
-              <X size={16} className="mr-1" /> Cancel
+              Cancel
             </button>
             <button
               onClick={saveSongChanges}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
               disabled={loading}
             >
               {loading ? (
-                <RefreshCw size={16} className="mr-1 animate-spin" />
+                <>
+                  <RefreshCw size={18} className="mr-2 animate-spin" /> Saving...
+                </>
               ) : (
-                <Save size={16} className="mr-1" />
+                <>
+                  <Save size={18} className="mr-2" /> Save Changes
+                </>
               )}
-              Save Changes
             </button>
           </div>
         </div>
@@ -310,8 +406,8 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Song Management</h1>
+    <div className="p-4 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
       {errorMessage && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -325,186 +421,265 @@ export default function AdminPage() {
         </div>
       )}
 
-      <div className="mb-4">
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px">
-            <button
-              className={`mr-1 py-2 px-4 font-medium ${
-                activeTab === 'pending'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setActiveTab('pending')}
-            >
-              Pending Songs ({pendingSongs.length})
-            </button>
-            <button
-              className={`mr-1 py-2 px-4 font-medium ${
-                activeTab === 'approved'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setActiveTab('approved')}
-            >
-              Approved Songs ({approvedSongs.length})
-            </button>
-          </nav>
-        </div>
-      </div>
-
-      <div className="mb-4 flex justify-between items-center">
+      <div className="flex border-b mb-4">
         <button
-          onClick={fetchSongs}
-          className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded flex items-center"
+          className={`py-2 px-4 border-b-2 ${
+            activeTab === 'pending'
+              ? 'border-blue-500 text-blue-500'
+              : 'border-transparent hover:border-gray-300'
+          }`}
+          onClick={() => setActiveTab('pending')}
         >
-          <RefreshCw size={16} className={`mr-1 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          Pending Songs
+        </button>
+        <button
+          className={`py-2 px-4 border-b-2 ${
+            activeTab === 'approved'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('approved')}
+        >
+          Approved Songs
+        </button>
+        <button
+          className={`py-2 px-4 border-b-2 ${
+            activeTab === 'reports'
+              ? 'border-blue-500 text-blue-500'
+              : 'border-transparent hover:border-gray-300'
+          }`}
+          onClick={() => setActiveTab('reports')}
+        >
+          Lyrics Reports
         </button>
       </div>
 
-      {loading && <p className="text-center py-4">Loading songs...</p>}
+      <div className="flex justify-between mb-4">
+        <button
+          onClick={activeTab === 'reports' ? fetchLyricsReports : fetchSongs}
+          className="flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+        >
+          <RefreshCw size={16} className={`mr-1 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </button>
+      </div>
 
-      {activeTab === 'pending' && !loading && (
-        <>
-          {pendingSongs.length === 0 ? (
-            <p className="text-center py-8 text-gray-500">No pending songs</p>
-          ) : (
-            <div className="bg-white shadow overflow-hidden rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Title
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Artist
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Language
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+      {activeTab === 'pending' && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="py-2 px-3 border-b text-left">Title</th>
+                <th className="py-2 px-3 border-b text-left">Artist</th>
+                <th className="py-2 px-3 border-b text-left">Language</th>
+                <th className="py-2 px-3 border-b text-left">Date</th>
+                <th className="py-2 px-3 border-b text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingSongs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-gray-500">
+                    No pending songs found
+                  </td>
+                </tr>
+              ) : (
+                pendingSongs.map((song) => (
+                  <tr key={song.id} className="hover:bg-gray-50">
+                    <td className="py-2 px-3 border-b">{song.title}</td>
+                    <td className="py-2 px-3 border-b">{song.artist}</td>
+                    <td className="py-2 px-3 border-b">{song.language}</td>
+                    <td className="py-2 px-3 border-b">
+                      {new Date(song.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-2 px-3 border-b">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => approveSong(song.id)}
+                          className="p-1 text-green-600 hover:text-green-800"
+                          title="Approve"
+                        >
+                          <Check size={18} />
+                        </button>
+                        <button
+                          onClick={() => startEditing(song, 'pending')}
+                          className="p-1 text-blue-600 hover:text-blue-800"
+                          title="Edit"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => deleteSong(song.id, 'pendingSongs')}
+                          className="p-1 text-red-600 hover:text-red-800"
+                          title="Delete"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {pendingSongs.map((song) => (
-                    <tr key={song.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {song.title}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {song.artist}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {song.language}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab === 'approved' && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="py-2 px-3 border-b text-left">Title</th>
+                <th className="py-2 px-3 border-b text-left">Artist</th>
+                <th className="py-2 px-3 border-b text-left">Language</th>
+                <th className="py-2 px-3 border-b text-left">Views</th>
+                <th className="py-2 px-3 border-b text-left">Likes</th>
+                <th className="py-2 px-3 border-b text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {approvedSongs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-4 text-center text-gray-500">
+                    No approved songs found
+                  </td>
+                </tr>
+              ) : (
+                approvedSongs.map((song) => (
+                  <tr key={song.id} className="hover:bg-gray-50">
+                    <td className="py-2 px-3 border-b">{song.title}</td>
+                    <td className="py-2 px-3 border-b">{song.artist}</td>
+                    <td className="py-2 px-3 border-b">{song.language}</td>
+                    <td className="py-2 px-3 border-b">{song.views}</td>
+                    <td className="py-2 px-3 border-b">{song.likes || 0}</td>
+                    <td className="py-2 px-3 border-b">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => startEditing(song, 'approved')}
+                          className="p-1 text-blue-600 hover:text-blue-800"
+                          title="Edit"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => deleteSong(song.id, 'songs')}
+                          className="p-1 text-red-600 hover:text-red-800"
+                          title="Delete"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab === 'reports' && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="py-2 px-3 border-b text-left">Song</th>
+                <th className="py-2 px-3 border-b text-left">Reason</th>
+                <th className="py-2 px-3 border-b text-left">Details</th>
+                <th className="py-2 px-3 border-b text-left">Status</th>
+                <th className="py-2 px-3 border-b text-left">Reported On</th>
+                <th className="py-2 px-3 border-b text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lyricsReports.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-4 text-center text-gray-500">
+                    No lyrics reports found
+                  </td>
+                </tr>
+              ) : (
+                lyricsReports.map((report) => (
+                  <tr key={report.id} className="hover:bg-gray-50">
+                    <td className="py-2 px-3 border-b">
+                      {report.song ? (
+                        <div>
+                          <div className="font-medium">{report.song.title}</div>
+                          <div className="text-sm text-gray-500">{report.song.artist}</div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-500">Unknown song</span>
+                      )}
+                    </td>
+                    <td className="py-2 px-3 border-b">{getReportReasonText(report.reason)}</td>
+                    <td className="py-2 px-3 border-b">
+                      <div className="max-w-xs truncate">{report.details || '-'}</div>
+                    </td>
+                    <td className="py-2 px-3 border-b">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                          ${
+                            report.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : report.status === 'reviewed'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-green-100 text-green-800'
+                          }`}
+                      >
+                        {report.status === 'pending'
+                          ? 'Đang chờ'
+                          : report.status === 'reviewed'
+                            ? 'Đã xem xét'
+                            : 'Đã giải quyết'}
+                      </span>
+                    </td>
+                    <td className="py-2 px-3 border-b">
+                      {new Date(report.createdAt).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="py-2 px-3 border-b">
+                      <div className="flex space-x-2">
+                        {report.song && (
                           <button
-                            onClick={() => approveSong(song.id)}
-                            className="text-green-600 hover:text-green-900"
-                            title="Approve"
+                            onClick={() => startEditing(report.song as Song, 'approved')}
+                            className="p-1 text-blue-600 hover:text-blue-800"
+                            title="Edit Song"
+                          >
+                            <Edit size={18} />
+                          </button>
+                        )}
+                        {report.status === 'pending' && (
+                          <button
+                            onClick={() => updateReportStatus(report.id, 'reviewed')}
+                            className="p-1 text-blue-600 hover:text-blue-800"
+                            title="Mark as Reviewed"
+                          >
+                            <AlertCircle size={18} />
+                          </button>
+                        )}
+                        {(report.status === 'pending' || report.status === 'reviewed') && (
+                          <button
+                            onClick={() => updateReportStatus(report.id, 'resolved')}
+                            className="p-1 text-green-600 hover:text-green-800"
+                            title="Mark as Resolved"
                           >
                             <Check size={18} />
                           </button>
-                          <button
-                            onClick={() => startEditing(song, activeTab)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="Edit"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => deleteSong(song.id, 'pendingSongs')}
-                            className="text-red-600 hover:text-red-900"
-                            title="Delete"
-                          >
-                            <Trash size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </>
-      )}
-
-      {activeTab === 'approved' && !loading && (
-        <>
-          {approvedSongs.length === 0 ? (
-            <p className="text-center py-8 text-gray-500">No approved songs</p>
-          ) : (
-            <div className="bg-white shadow overflow-hidden rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Title
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Artist
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Language
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Views
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Likes
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                        )}
+                        <button
+                          onClick={() => deleteReport(report.id)}
+                          className="p-1 text-red-600 hover:text-red-800"
+                          title="Delete Report"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {approvedSongs.map((song) => (
-                    <tr key={song.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {song.title}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {song.artist}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {song.language}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {song.views || 0}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {song.likes || 0}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => startEditing(song, activeTab)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="Edit"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => deleteSong(song.id, 'songs')}
-                            className="text-red-600 hover:text-red-900"
-                            title="Delete"
-                          >
-                            <Trash size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )
