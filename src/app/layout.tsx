@@ -17,8 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isNavigating, setIsNavigating] = useState(false)
-
-  // Xử lý chuyển trang
+  
   useEffect(() => {
     setIsNavigating(false)
   }, [pathname, searchParams])
@@ -33,7 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {isNavigating ? (
                 <PageSuspense />
               ) : (
-                <Suspense fallback={<PageSuspense />}>{children}</Suspense>
+                <Suspense fallback={<PageSuspense />}>
+                  {children}
+                </Suspense>
               )}
             </main>
             <Footer />
