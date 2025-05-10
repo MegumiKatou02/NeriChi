@@ -103,9 +103,15 @@ export const searchSongs = async (searchTerm: string, language?: Language) => {
         ({
           id: doc.id,
           ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() ?? null,
-          updatedAt: doc.data().updatedAt?.toDate() ?? null,
-        }) as Song,
+          createdAt:
+          doc.data().createdAt && typeof doc.data().createdAt.toDate === 'function'
+            ? doc.data().createdAt.toDate()
+            : null,
+          updatedAt:
+            doc.data().updatedAt && typeof doc.data().updatedAt.toDate === 'function'
+              ? doc.data().updatedAt.toDate()
+              : null,
+          }) as Song,
     )
     .filter((song) => {
       const matchesSearch =

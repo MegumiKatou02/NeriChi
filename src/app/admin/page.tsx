@@ -364,13 +364,13 @@ export default function AdminPage() {
                 onChange={handleEditChange}
                 className="w-full border rounded p-2"
               >
-                <option value="Vietnamese">Vietnamese</option>
-                <option value="English">English</option>
-                <option value="Korean">Korean</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Romaji">Japanese (Romaji)</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Other">Other</option>
+                <option value="vietnamese">Vietnamese</option>
+                <option value="english">English</option>
+                <option value="korean">Korean</option>
+                <option value="japanese">Japanese</option>
+                <option value="romaji">Japanese (Romaji)</option>
+                <option value="chinese">Chinese</option>
+                <option value="other">Other</option>
               </select>
             </div>
           </div>
