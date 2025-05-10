@@ -18,25 +18,25 @@ export default function HomePage() {
   const [songs, setSongs] = useState<Song[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  
+
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const songsPerPage = 6 
-  
+  const songsPerPage = 6
+
   useEffect(() => {
     const fetchLatestSongs = async () => {
       try {
         setLoading(true)
         const response = await fetchSongs()
-        
+
         const totalSongs = response.length
         const calculatedTotalPages = Math.ceil(totalSongs / songsPerPage)
         setTotalPages(calculatedTotalPages)
-        
+
         const startIndex = (currentPage - 1) * songsPerPage
         const endIndex = startIndex + songsPerPage
         const paginatedSongs = response.slice(startIndex, endIndex)
-        
+
         setSongs(paginatedSongs)
       } catch (error) {
         console.error('Error fetching songs:', error)
@@ -44,20 +44,20 @@ export default function HomePage() {
         setLoading(false)
       }
     }
-    
+
     fetchLatestSongs()
   }, [fetchSongs, currentPage, songsPerPage])
-  
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
-  
+
   const handlePrevPage = () => {
     if (currentPage > 1) {
       handlePageChange(currentPage - 1)
     }
   }
-  
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       handlePageChange(currentPage + 1)
@@ -146,20 +146,15 @@ export default function HomePage() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-8">Bài hát mới nhất</h1>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading ? (
-              Array(6).fill(0).map((_, index) => (
-                <SkeletonCard key={index} />
-              ))
-            ) : (
-              songs.map((song) => (
-                <SongCard key={song.id} song={song} />
-              ))
-            )}
+            {loading
+              ? Array(6)
+                  .fill(0)
+                  .map((_, index) => <SkeletonCard key={index} />)
+              : songs.map((song) => <SongCard key={song.id} song={song} />)}
           </div>
-          
-          {/* Phân trang */}
+
           {!loading && totalPages > 1 && (
             <div className="mt-8 flex justify-center">
               <nav className="flex items-center gap-1">
@@ -174,7 +169,7 @@ export default function HomePage() {
                 >
                   Trước
                 </button>
-                
+
                 <div className="flex gap-1 mx-2">
                   {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
                     let pageNumber: number
@@ -187,7 +182,7 @@ export default function HomePage() {
                     } else {
                       pageNumber = currentPage - 2 + i
                     }
-                    
+
                     return (
                       <button
                         key={i}
@@ -203,7 +198,7 @@ export default function HomePage() {
                     )
                   })}
                 </div>
-                
+
                 <button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}

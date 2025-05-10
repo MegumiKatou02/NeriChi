@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isNavigating, setIsNavigating] = useState(false)
-  
+
   useEffect(() => {
     setIsNavigating(false)
   }, [pathname, searchParams])
@@ -27,17 +27,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <ThemeProvider>
           <div className="flex flex-col min-h-screen">
-            <Header />
+            {/* <Header /> */}
             <main className="flex-grow">
               {isNavigating ? (
                 <PageSuspense />
               ) : (
-                <Suspense fallback={<PageSuspense />}>
-                  {children}
-                </Suspense>
+                <Suspense fallback={<PageSuspense />}>{children}</Suspense>
               )}
             </main>
-            <Footer />
+            {/* <Footer /> */}
           </div>
           <Toaster position="top-center" />
           <AuthModal />
