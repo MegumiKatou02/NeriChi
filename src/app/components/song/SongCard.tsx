@@ -121,6 +121,11 @@ export default function SongCard({ song }: SongCardProps) {
               <FiEye className="mr-1" />
               <span>{song.views.toLocaleString()}</span>
             </div>
+            <div className="flex items-center">
+              <span className="px-2 py-0.5 bg-secondary rounded-full text-xs">
+                {song.language.charAt(0).toUpperCase() + song.language.slice(1)}
+              </span>
+            </div>
             {/* <div className="flex items-center">
               <FiHeart className="mr-1" />
               <span>{song.likes.toLocaleString()}</span>
