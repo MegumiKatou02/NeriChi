@@ -72,14 +72,15 @@ export default function ContributorAvatars({
   const remainingCount = contributors.length - maxDisplay
 
   return (
-    <div className="flex">
+    <div className="flex items-center">
       {displayContributors.map((userId, index) => {
         const user = users.get(userId)
         return (
           <div
             key={userId}
             onClick={() => router.push(`/users/${userId}`)}
-            className={`${index > 0 ? offsetCls : ''} block ${sizeCls} rounded-full border-2 border-background dark:border-gray-800 transition-transform hover:transform hover:scale-110 hover:z-10 relative cursor-pointer`}
+            // className={`${index > 0 ? offsetCls : ''} block ${sizeCls} rounded-full border-2 border-background dark:border-gray-800 transition-transform hover:transform hover:scale-110 hover:z-10 relative cursor-pointer`}
+            className={`${index > 0 ? offsetCls : ''} block ${sizeCls} transition-transform hover:transform hover:scale-110 hover:z-10 relative cursor-pointer object-cover`}
             style={{ zIndex: displayContributors.length - index }}
           >
             {user && user.photoURL ? (
