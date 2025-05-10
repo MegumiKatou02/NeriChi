@@ -224,7 +224,12 @@ export function useSongs() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ songId, reporterId: user.uid, reason: reportData.reason, details: reportData.details }),
+          body: JSON.stringify({
+            songId,
+            reporterId: user.uid,
+            reason: reportData.reason,
+            details: reportData.details,
+          }),
         })
 
         if (!response.ok) {

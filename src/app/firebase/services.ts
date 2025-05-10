@@ -52,17 +52,21 @@ export const getSongs = async (limit_count = 20) => {
   )
 
   const snapshot = await getDocs(q)
-  return snapshot.docs.map(
-    (doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : null,
-        updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : null,
-      } as Song;
-    }
-  )
+  return snapshot.docs.map((doc) => {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      ...data,
+      createdAt:
+        data.createdAt && typeof data.createdAt.toDate === 'function'
+          ? data.createdAt.toDate()
+          : null,
+      updatedAt:
+        data.updatedAt && typeof data.updatedAt.toDate === 'function'
+          ? data.updatedAt.toDate()
+          : null,
+    } as Song
+  })
 }
 
 export const getSongById = async (id: string) => {
