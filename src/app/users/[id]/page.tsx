@@ -8,14 +8,14 @@ import Image from 'next/image'
 import { FiCalendar, FiUser } from 'react-icons/fi'
 import Link from 'next/link'
 
-interface UserPageProps {
-  params: {
-    id: string
-  }
-}
+// interface UserPageProps {
+//   params: {
+//     id: string
+//   }
+// }
 
-export async function generateMetadata({ params }: UserPageProps): Promise<Metadata> {
-  const { id } = await params
+export async function generateMetadata(context: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await context.params;
 
   if (!id) notFound()
 
@@ -44,8 +44,8 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
   }
 }
 
-export default async function UserPage({ params }: UserPageProps) {
-  const { id } = await params
+export default async function UserPage(context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params
 
   if (!id) notFound()
 

@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/app/firebase/config'
 
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context.params
+    const { id } = await context.params
 
     const { status, ...songData } = await req.json()
 
@@ -32,9 +32,9 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context.params
+    const { id } = await context.params
     const { collection: collectionName } = await req.json()
 
     if (collectionName !== 'songs' && collectionName !== 'pendingSongs') {
