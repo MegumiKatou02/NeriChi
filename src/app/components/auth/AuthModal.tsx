@@ -23,13 +23,13 @@ export default function AuthModal() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node) && !loading) {
         closeModal()
       }
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !loading) {
         closeModal()
       }
     }
@@ -45,7 +45,7 @@ export default function AuthModal() {
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
     }
-  }, [isAuthModalOpen, closeModal])
+  }, [isAuthModalOpen, closeModal, loading])
 
   const switchMode = () => {
     setAuthModalType(authModalType === 'login' ? 'register' : 'login')
@@ -59,11 +59,16 @@ export default function AuthModal() {
 
     try {
       if (authModalType === 'register') {
-        await register(email, password, displayName)
+        const result = await register(email, password, displayName)
+        if (result) {
+          closeModal()
+        }
       } else {
-        await login(email, password)
+        const result = await login(email, password)
+        if (result) {
+          closeModal()
+        }
       }
-      closeModal()
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -75,8 +80,10 @@ export default function AuthModal() {
     try {
       setLoading(true)
       setError(null)
-      await signInWithGoogle()
-      closeModal()
+      const result = await signInWithGoogle()
+      if (result) {
+        closeModal()
+      }
     } catch (err) {
       setError((err as Error).message)
     } finally {

@@ -30,6 +30,7 @@ export default function Navbar() {
     setIsMobileMenuOpen,
     setIsAuthModalOpen,
     setAuthModalType,
+    isAuthModalOpen,
     isDarkMode,
     toggleDarkMode,
   } = useUIStore()
@@ -37,6 +38,12 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isAuthModalOpen) {
+      setShowSearchModal(false)
+    }
+  }, [isAuthModalOpen])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -225,7 +232,9 @@ export default function Navbar() {
                           {user.displayName || user.email}
                         </p>
                         {user.email && (
-                          <p className="text-xs text-muted-foreground mt-1 truncate">{user.email}</p>
+                          <p className="text-xs text-muted-foreground mt-1 truncate">
+                            {user.email}
+                          </p>
                         )}
                       </div>
                       <div className="py-1">
@@ -407,8 +416,8 @@ export default function Navbar() {
 
       {showSearchModal && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-16 sm:pt-24">
-          <div 
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm" 
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => setShowSearchModal(false)}
           ></div>
           <div className="relative w-full max-w-lg p-4 bg-card rounded-lg shadow-xl border border-border animate-in fade-in slide-in-from-top-10 duration-200">
@@ -427,7 +436,7 @@ export default function Navbar() {
                   Esc
                 </kbd>
               </div>
-              
+
               <div className="mt-4 flex justify-end space-x-2">
                 <button
                   type="button"

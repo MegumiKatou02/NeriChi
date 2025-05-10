@@ -26,16 +26,52 @@ import {
 } from 'firebase/auth'
 
 export const registerWithEmail = async (email: string, password: string) => {
-  return createUserWithEmailAndPassword(auth, email, password)
+  try {
+    return await createUserWithEmailAndPassword(auth, email, password)
+  } catch (error: any) {
+    if (error.code === 'auth/email-already-in-use') {
+      throw new Error('Email này đã được sử dụng. Vui lòng thử email khác.')
+    } else if (error.code === 'auth/invalid-email') {
+      throw new Error('Email không hợp lệ. Vui lòng thử lại.')
+    } else if (error.code === 'auth/weak-password') {
+      throw new Error('Mật khẩu yếu. Vui lòng sử dụng mật khẩu mạnh hơn.')
+    }
+    console.error('Lỗi đăng ký:', error.code, error.message)
+    throw new Error('Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.')
+  }
 }
 
 export const loginWithEmail = async (email: string, password: string) => {
-  return signInWithEmailAndPassword(auth, email, password)
+  try {
+    return await signInWithEmailAndPassword(auth, email, password)
+  } catch (error: any) {
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      throw new Error('Email hoặc mật khẩu không đúng. Vui lòng thử lại.')
+    } else if (error.code === 'auth/invalid-email') {
+      throw new Error('Email không hợp lệ. Vui lòng thử lại.')
+    } else if (error.code === 'auth/user-disabled') {
+      throw new Error('Tài khoản này đã bị vô hiệu hóa.')
+    } else if (error.code === 'auth/too-many-requests') {
+      throw new Error('Quá nhiều lần thử đăng nhập không thành công. Vui lòng thử lại sau.')
+    }
+    console.error('Lỗi đăng nhập:', error.code, error.message)
+    throw new Error('Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại sau.')
+  }
 }
 
 export const loginWithGoogle = async () => {
-  const provider = new GoogleAuthProvider()
-  return signInWithPopup(auth, provider)
+  try {
+    const provider = new GoogleAuthProvider()
+    return await signInWithPopup(auth, provider)
+  } catch (error: any) {
+    if (error.code === 'auth/popup-closed-by-user') {
+      throw new Error('Đăng nhập bị hủy. Vui lòng thử lại.')
+    } else if (error.code === 'auth/popup-blocked') {
+      throw new Error('Cửa sổ đăng nhập bị chặn. Vui lòng cho phép popup và thử lại.')
+    }
+    console.error('Lỗi đăng nhập Google:', error.code, error.message)
+    throw new Error('Đã xảy ra lỗi khi đăng nhập bằng Google. Vui lòng thử lại sau.')
+  }
 }
 
 export const logout = async () => {

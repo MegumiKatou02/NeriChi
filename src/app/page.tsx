@@ -73,7 +73,7 @@ export default function HomePage() {
 
   return (
     <MainLayout>
-      <section className="pt-10 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/10 to-transparent">
+      <section className="pt-10 pb-20 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
             Khám phá lời bài hát yêu thích của bạn
@@ -143,7 +143,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section className="py-16">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-8">Bài hát mới nhất</h1>
 
@@ -216,8 +216,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900/50">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-16 bg-gray-50 dark:bg-gray-900/50">
+        <MainLayout>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-10 text-center">
             Khám phá theo ngôn ngữ
           </h2>
@@ -248,7 +248,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        </div>
+        </MainLayout>
       </section>
 
       <section className="py-16 px-4 sm:px-6 lg:px-8">
