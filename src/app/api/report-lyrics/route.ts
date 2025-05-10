@@ -63,13 +63,13 @@ export async function POST(req: NextRequest) {
     const reportRef = collection(db, 'lyricsReports')
 
     const newReport = await addDoc(reportRef, {
-        songId,
-        reporterId,
-        reason,
-        details: details || '',
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+      songId,
+      reporterId,
+      reason,
+      details: details || '',
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     })
 
     return NextResponse.json(

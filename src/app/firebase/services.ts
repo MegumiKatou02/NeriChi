@@ -80,8 +80,14 @@ export const getSongById = async (id: string) => {
   return {
     id: songDoc.id,
     ...songDoc.data(),
-    createdAt: songDoc.data().createdAt?.toDate() ?? null,
-    updatedAt: songDoc.data().updatedAt?.toDate() ?? null,
+    createdAt:
+      songDoc.data().createdAt && typeof songDoc.data().createdAt.toDate === 'function'
+        ? songDoc.data().createdAt.toDate()
+        : null,
+    updatedAt:
+      songDoc.data().updatedAt && typeof songDoc.data().updatedAt.toDate === 'function'
+        ? songDoc.data().updatedAt.toDate()
+        : null,
   } as Song
 }
 
@@ -257,8 +263,14 @@ export async function getUserSongs(userId: string): Promise<Song[]> {
       songs.push({
         id: doc.id,
         ...data,
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
+        createdAt:
+          data.createdAt && typeof data.createdAt.toDate === 'function'
+            ? data.createdAt.toDate()
+            : null,
+        updatedAt:
+          data.updatedAt && typeof data.updatedAt.toDate === 'function'
+            ? data.updatedAt.toDate()
+            : null,
       } as Song)
     })
 
@@ -284,8 +296,6 @@ export async function getUserFavorites(userId: string): Promise<Song[]> {
       return []
     }
 
-    console.log('savedSongs', savedSongs)
-
     const songsCollection = collection(db, 'songs')
     const q = query(songsCollection, where('__name__', 'in', savedSongs))
 
@@ -301,8 +311,14 @@ export async function getUserFavorites(userId: string): Promise<Song[]> {
       songs.push({
         id: doc.id,
         ...data,
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
+        createdAt:
+          data.createdAt && typeof data.createdAt.toDate === 'function'
+            ? data.createdAt.toDate()
+            : null,
+        updatedAt:
+          data.updatedAt && typeof data.updatedAt.toDate === 'function'
+            ? data.updatedAt.toDate()
+            : null,
       } as Song)
     })
 

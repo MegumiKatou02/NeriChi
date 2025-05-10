@@ -25,4 +25,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     console.error('Error adding contributor:', error)
     return NextResponse.json({ error: 'Failed to add contributor' }, { status: 500 })
   }
-} 
+}
