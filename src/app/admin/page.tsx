@@ -246,15 +246,19 @@ export default function AdminPage() {
     try {
       setLoading(true)
 
+      const updatedSong = {
+        ...editingSong,
+        updatedAt: new Date(),
+        createdAt: editingSong.createdAt instanceof Date ? editingSong.createdAt : new Date(editingSong.createdAt || Date.now()),
+        status: editingTab,
+      }
+
       const res = await fetch(`/api/songs/${editingSong.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...editingSong,
-          status: editingTab,
-        }),
+        body: JSON.stringify(updatedSong),
       })
 
       if (!res.ok) {
@@ -263,11 +267,11 @@ export default function AdminPage() {
 
       if (editingSong.approved) {
         setApprovedSongs((prev) =>
-          prev.map((song) => (song.id === editingSong.id ? editingSong : song)),
+          prev.map((song) => (song.id === editingSong.id ? updatedSong : song)),
         )
       } else {
         setPendingSongs((prev) =>
-          prev.map((song) => (song.id === editingSong.id ? editingSong : song)),
+          prev.map((song) => (song.id === editingSong.id ? updatedSong : song)),
         )
       }
 
