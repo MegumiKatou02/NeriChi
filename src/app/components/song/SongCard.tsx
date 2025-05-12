@@ -135,9 +135,12 @@ export default function SongCard({ song }: SongCardProps) {
               className="p-2 rounded-full hover:bg-background dark:hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
               title={isFavorite ? 'Hủy lưu bài hát' : 'Lưu bài hát'}
             >
+              <div className="flex items-center">
+              <span className="mr-1 text-sm font-medium text-gray-500 dark:text-gray-300">{song.likes ?? 0}</span>
               <FiHeart
                 className={`w-5 h-5 ${isSaving ? 'animate-pulse' : ''} ${isFavorite ? 'text-red-500 fill-red-500' : ''}`}
               />
+              </div>
             </button>
 
             <div className="relative">
