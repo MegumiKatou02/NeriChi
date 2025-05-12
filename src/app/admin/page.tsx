@@ -19,6 +19,7 @@ interface LyricsReport {
   updatedAt: Date
   song?: Song
   reporterName?: string
+  reporterEmail?: string
 }
 
 export default function AdminPage() {
@@ -637,14 +638,12 @@ export default function AdminPage() {
                       <td className="py-2 px-3 border-b">
                         <div className="max-w-xs truncate flex items-center gap-2">
                           <span>{report.details.slice(0, 20) || '-'}</span>
-                          {report.details && report.details.length > 1 && (
                             <button
                               className="text-blue-600 hover:underline text-xs"
                               onClick={() => setReportDetailModal(report)}
                             >
                               Xem chi tiết
                             </button>
-                          )}
                         </div>
                       </td>
                       <td className="py-2 px-3 border-b">
@@ -718,6 +717,9 @@ export default function AdminPage() {
             <h2 className="text-xl font-bold mb-4">Chi tiết báo cáo lời bài hát</h2>
             <div className="mb-2"><b>Bài hát:</b> {reportDetailModal.song ? reportDetailModal.song.title : 'Không rõ'}</div>
             <div className="mb-2"><b>Người báo cáo:</b> {reportDetailModal.reporterName || reportDetailModal.reporterId || 'Ẩn danh'}</div>
+            {reportDetailModal.reporterEmail && (
+              <div className="mb-2"><b>Email:</b> {reportDetailModal.reporterEmail}</div>
+            )}
             <div className="mb-2"><b>Lý do:</b> {getReportReasonText(reportDetailModal.reason)}</div>
             <div className="mb-2"><b>Ngày báo cáo:</b> {new Date(reportDetailModal.createdAt).toLocaleString('vi-VN')}</div>
             <div className="mb-2"><b>Chi tiết:</b></div>

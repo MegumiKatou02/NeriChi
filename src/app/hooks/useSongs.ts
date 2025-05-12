@@ -227,6 +227,7 @@ export function useSongs() {
           body: JSON.stringify({
             songId,
             reporterId: user.uid,
+            reporterEmail: user.email,
             reason: reportData.reason,
             details: reportData.details,
           }),

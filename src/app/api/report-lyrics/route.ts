@@ -70,7 +70,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { songId, reporterId, reason, details } = await req.json()
+    const { songId, reporterId, reporterEmail, reason, details } = await req.json()
 
     if (!songId || !reporterId || !reason) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
     const newReport = await addDoc(reportRef, {
       songId,
       reporterId,
+      reporterEmail: reporterEmail || '',
       reason,
       details: details || '',
       status: 'pending',
