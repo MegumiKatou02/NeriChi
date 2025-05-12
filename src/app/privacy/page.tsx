@@ -178,7 +178,7 @@ export default function PrivacyPage() {
           <div className="prose dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-a:text-primary max-w-none">
             <p className="text-lg mb-8">
               {content.lastUpdated}{' '}
-              {new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'vi-VN')}
+              {new Date('2025-05-10').toLocaleDateString(language === 'en' ? 'en-US' : 'vi-VN')}
             </p>
 
             {content.sections.map((section, index) => (

@@ -6,7 +6,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
   try {
     const { id } = await context.params
 
-    const { status, createdAt, ...songData } = await req.json()
+    const { status, ...songData } = await req.json()
 
     if (status !== 'approved' && status !== 'pending') {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })

@@ -237,7 +237,7 @@ export default function HomePage() {
                   {lang === Language.OTHER && 'Ngôn ngữ khác'}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Khám phá các bài hát
+                  Khám phá các bài hát {' '}
                   {lang === Language.VIETNAMESE && 'tiếng Việt'}
                   {lang === Language.ENGLISH && 'tiếng Anh'}
                   {lang === Language.KOREAN && 'tiếng Hàn (K-Pop)'}
