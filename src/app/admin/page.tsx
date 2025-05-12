@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Trash, Edit, Check, RefreshCw, Save, ArrowLeft, AlertCircle } from 'lucide-react'
+import { Trash, Edit, Check, RefreshCw, Save, ArrowLeft, AlertCircle, Eye } from 'lucide-react'
 import type { Song } from '../types'
 import { auth, db } from '../firebase/config'
 import { onAuthStateChanged } from 'firebase/auth'
@@ -33,6 +33,7 @@ export default function AdminPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [editingTab, setEditingTab] = useState<status | null>(null)
+  const [reportDetailModal, setReportDetailModal] = useState<null | LyricsReport>(null)
   const router = useRouter()
   const adminUid = process.env.NEXT_PUBLIC_ADMIN_UID
 
@@ -544,7 +545,18 @@ export default function AdminPage() {
               ) : (
                 approvedSongs.map((song) => (
                   <tr key={song.id} className="hover:bg-gray-50">
-                    <td className="py-2 px-3 border-b">{song.title}</td>
+                    <td className="py-2 px-3 border-b flex items-center gap-2">
+                      <span>{song.title}</span>
+                      {song && song.id && (
+                        <button
+                          onClick={() => router.push(`/songs/${song.id}`)}
+                          className="p-1 text-gray-500 hover:text-primary"
+                          title="Xem bài hát"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      )}
+                    </td>
                     <td className="py-2 px-3 border-b">{song.artist}</td>
                     <td className="py-2 px-3 border-b">{song.language}</td>
                     <td className="py-2 px-3 border-b">{song.views}</td>
@@ -596,86 +608,123 @@ export default function AdminPage() {
                   </td>
                 </tr>
               ) : (
-                lyricsReports.map((report) => (
-                  <tr key={report.id} className="hover:bg-gray-50">
-                    <td className="py-2 px-3 border-b">
-                      {report.song ? (
-                        <div>
-                          <div className="font-medium">{report.song.title}</div>
-                          <div className="text-sm text-gray-500">{report.song.artist}</div>
+                lyricsReports.map((report) => {
+                  const song = report.song;
+                  return (
+                    <tr key={report.id} className="hover:bg-gray-50">
+                      <td className="py-2 px-3 border-b">
+                        {song ? (
+                          <div className="flex items-center gap-2">
+                            <div>
+                              <div className="font-medium">{song.title}</div>
+                              <div className="text-sm text-gray-500">{song.artist}</div>
+                            </div>
+                            {song && song.id && (
+                              <button
+                                onClick={() => router.push(`/songs/${song.id}`)}
+                                className="p-1 text-gray-500 hover:text-primary"
+                                title="Xem bài hát"
+                              >
+                                <Eye size={16} />
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">Unknown song</span>
+                        )}
+                      </td>
+                      <td className="py-2 px-3 border-b">{getReportReasonText(report.reason)}</td>
+                      <td className="py-2 px-3 border-b">
+                        <div className="max-w-xs truncate flex items-center gap-2">
+                          <span>{report.details.slice(0, 20) || '-'}</span>
+                          {report.details && report.details.length > 1 && (
+                            <button
+                              className="text-blue-600 hover:underline text-xs"
+                              onClick={() => setReportDetailModal(report)}
+                            >
+                              Xem chi tiết
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <span className="text-gray-500">Unknown song</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-3 border-b">{getReportReasonText(report.reason)}</td>
-                    <td className="py-2 px-3 border-b">
-                      <div className="max-w-xs truncate">{report.details || '-'}</div>
-                    </td>
-                    <td className="py-2 px-3 border-b">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                          ${
-                            report.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : report.status === 'reviewed'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-green-100 text-green-800'
-                          }`}
-                      >
-                        {report.status === 'pending'
-                          ? 'Đang chờ'
-                          : report.status === 'reviewed'
-                            ? 'Đã xem xét'
-                            : 'Đã giải quyết'}
-                      </span>
-                    </td>
-                    <td className="py-2 px-3 border-b">
-                      {new Date(report.createdAt).toLocaleDateString('vi-VN')}
-                    </td>
-                    <td className="py-2 px-3 border-b">
-                      <div className="flex space-x-2">
-                        {report.song && (
-                          <button
-                            onClick={() => startEditing(report.song as Song, 'approved')}
-                            className="p-1 text-blue-600 hover:text-blue-800"
-                            title="Edit Song"
-                          >
-                            <Edit size={18} />
-                          </button>
-                        )}
-                        {report.status === 'pending' && (
-                          <button
-                            onClick={() => updateReportStatus(report.id, 'reviewed')}
-                            className="p-1 text-blue-600 hover:text-blue-800"
-                            title="Mark as Reviewed"
-                          >
-                            <AlertCircle size={18} />
-                          </button>
-                        )}
-                        {(report.status === 'pending' || report.status === 'reviewed') && (
-                          <button
-                            onClick={() => updateReportStatus(report.id, 'resolved')}
-                            className="p-1 text-green-600 hover:text-green-800"
-                            title="Mark as Resolved"
-                          >
-                            <Check size={18} />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => deleteReport(report.id)}
-                          className="p-1 text-red-600 hover:text-red-800"
-                          title="Delete Report"
+                      </td>
+                      <td className="py-2 px-3 border-b">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            ${
+                              report.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : report.status === 'reviewed'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-green-100 text-green-800'
+                            }`}
                         >
-                          <Trash size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {report.status === 'pending'
+                            ? 'Đang chờ'
+                            : report.status === 'reviewed'
+                              ? 'Đã xem xét'
+                              : 'Đã giải quyết'}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 border-b">
+                        {new Date(report.createdAt).toLocaleDateString('vi-VN')}
+                      </td>
+                      <td className="py-2 px-3 border-b">
+                        <div className="flex space-x-2">
+                          {report.status === 'pending' && (
+                            <button
+                              onClick={() => updateReportStatus(report.id, 'reviewed')}
+                              className="p-1 text-blue-600 hover:text-blue-800"
+                              title="Mark as Reviewed"
+                            >
+                              <AlertCircle size={18} />
+                            </button>
+                          )}
+                          {(report.status === 'pending' || report.status === 'reviewed') && (
+                            <button
+                              onClick={() => updateReportStatus(report.id, 'resolved')}
+                              className="p-1 text-green-600 hover:text-green-800"
+                              title="Mark as Resolved"
+                            >
+                              <Check size={18} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteReport(report.id)}
+                            className="p-1 text-red-600 hover:text-red-800"
+                            title="Delete Report"
+                          >
+                            <Trash size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {reportDetailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full p-6 relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              onClick={() => setReportDetailModal(null)}
+            >
+              Đóng
+            </button>
+            <h2 className="text-xl font-bold mb-4">Chi tiết báo cáo lời bài hát</h2>
+            <div className="mb-2"><b>Bài hát:</b> {reportDetailModal.song ? reportDetailModal.song.title : 'Không rõ'}</div>
+            <div className="mb-2"><b>Người báo cáo:</b> {reportDetailModal.reporterName || reportDetailModal.reporterId || 'Ẩn danh'}</div>
+            <div className="mb-2"><b>Lý do:</b> {getReportReasonText(reportDetailModal.reason)}</div>
+            <div className="mb-2"><b>Ngày báo cáo:</b> {new Date(reportDetailModal.createdAt).toLocaleString('vi-VN')}</div>
+            <div className="mb-2"><b>Chi tiết:</b></div>
+            <div className="whitespace-pre-line border rounded p-2 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+              {reportDetailModal.details}
+            </div>
+          </div>
         </div>
       )}
     </div>
