@@ -16,6 +16,7 @@ export default function AddSongForm() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [altNames, setAltNames] = useState<string[]>([])
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {}
@@ -47,6 +48,7 @@ export default function AddSongForm() {
       setLoading(true)
       await createSong({
         title,
+        altNames: altNames.filter(Boolean),
         artist,
         lyrics,
         language,
@@ -70,6 +72,10 @@ export default function AddSongForm() {
       setLoading(false)
     }
   }
+
+  const handleAddAltName = () => setAltNames([...altNames, ''])
+  const handleRemoveAltName = (idx: number) => setAltNames(altNames.filter((_, i) => i !== idx))
+  const handleAltNameChange = (idx: number, value: string) => setAltNames(altNames.map((n, i) => i === idx ? value : n))
 
   return (
     <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
@@ -129,6 +135,27 @@ export default function AddSongForm() {
             {errors.title && (
               <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Tên thay thế (Alt name)
+            </label>
+            <div className="space-y-2 mt-1">
+              {altNames.map((name, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => handleAltNameChange(idx, e.target.value)}
+                    className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                    placeholder={`Tên thay thế #${idx + 1}`}
+                  />
+                  <button type="button" onClick={() => handleRemoveAltName(idx)} className="text-red-500 hover:text-red-700 px-2 py-1">X</button>
+                </div>
+              ))}
+              <button type="button" onClick={handleAddAltName} className="text-primary hover:underline text-sm mt-1">+ Thêm tên thay thế</button>
+            </div>
           </div>
 
           <div>

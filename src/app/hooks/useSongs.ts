@@ -92,7 +92,10 @@ export function useSongs() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(song),
+          body: JSON.stringify({
+            ...song,
+            altNames: song.altNames ?? [],
+          }),
         })
 
         if (!response.ok) {

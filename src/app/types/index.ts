@@ -10,6 +10,7 @@ export interface User {
 export interface Song {
   id: string
   title: string
+  altNames?: string[]
   artist: string
   lyrics: string
   language: Language

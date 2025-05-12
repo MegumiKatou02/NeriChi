@@ -37,6 +37,7 @@ export default function AdminPage() {
   const [reportDetailModal, setReportDetailModal] = useState<null | LyricsReport>(null)
   const router = useRouter()
   const adminUid = process.env.NEXT_PUBLIC_ADMIN_UID
+  const [altNamesInput, setAltNamesInput] = useState<string[]>(editingSong?.altNames || [])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -55,6 +56,10 @@ export default function AdminPage() {
 
     return () => unsubscribe()
   }, [router, adminUid])
+
+  useEffect(() => {
+    setAltNamesInput(editingSong?.altNames || [])
+  }, [editingSong])
 
   const fetchSongs = async () => {
     setLoading(true)
@@ -242,6 +247,10 @@ export default function AdminPage() {
     })
   }
 
+  const handleAddAltNameInput = () => setAltNamesInput([...altNamesInput, ''])
+  const handleRemoveAltNameInput = (idx: number) => setAltNamesInput(altNamesInput.filter((_, i) => i !== idx))
+  const handleAltNameInputChange = (idx: number, value: string) => setAltNamesInput(altNamesInput.map((n, i) => i === idx ? value : n))
+
   const saveSongChanges = async () => {
     if (!editingSong) return
 
@@ -250,6 +259,7 @@ export default function AdminPage() {
 
       const updatedSong = {
         ...editingSong,
+        altNames: altNamesInput.filter(Boolean),
         updatedAt: new Date(),
         createdAt: editingSong.createdAt instanceof Date ? editingSong.createdAt : new Date(editingSong.createdAt || Date.now()),
         status: editingTab,
@@ -331,6 +341,25 @@ export default function AdminPage() {
                 onChange={handleEditChange}
                 className="w-full border rounded p-2"
               />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium">Tên thay thế (Alt name)</label>
+              <div className="space-y-2 mt-1">
+                {altNamesInput.map((name, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={e => handleAltNameInputChange(idx, e.target.value)}
+                      className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                      placeholder={`Tên thay thế #${idx + 1}`}
+                    />
+                    <button type="button" onClick={() => handleRemoveAltNameInput(idx)} className="text-red-500 hover:text-red-700 px-2 py-1">X</button>
+                  </div>
+                ))}
+                <button type="button" onClick={handleAddAltNameInput} className="text-primary hover:underline text-sm mt-1">+ Thêm tên thay thế</button>
+              </div>
             </div>
 
             <div>
