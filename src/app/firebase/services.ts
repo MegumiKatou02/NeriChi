@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import {
@@ -16,7 +17,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 import { db, auth } from './config'
-import { Language, Song } from '../types'
+import { Language, Song, SongInfo, SongVersion } from '../types'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -96,25 +97,52 @@ export const getSongs = async (limit_count = 20) => {
   const songsRef = collection(db, 'songs')
   const q = query(
     songsRef,
-    where('approved', '==', true),
-    orderBy('createdAt', 'desc'),
+    where('info.approved', '==', true),
+    orderBy('info.createdAt', 'desc'),
     limit(limit_count),
   )
+
+  // type SongVersion = {
+  //     lyrics: string;
+  //     contributors: string[];
+  //     createdAt?: { toDate: () => Date };
+  //     updatedAt?: { toDate: () => Date };
+  //   }
 
   const snapshot = await getDocs(q)
   return snapshot.docs.map((doc) => {
     const data = doc.data()
     return {
       id: doc.id,
-      ...data,
-      createdAt:
-        data.createdAt && typeof data.createdAt.toDate === 'function'
-          ? data.createdAt.toDate()
-          : null,
-      updatedAt:
-        data.updatedAt && typeof data.updatedAt.toDate === 'function'
-          ? data.updatedAt.toDate()
-          : null,
+      info: {
+        ...data.info,
+        createdAt:
+          data.info?.createdAt && typeof data.info.createdAt.toDate === 'function'
+            ? data.info.createdAt.toDate()
+            : null,
+        updatedAt:
+          data.info?.updatedAt && typeof data.info.updatedAt.toDate === 'function'
+            ? data.info.updatedAt.toDate()
+            : null,
+      },
+      versions: Object.entries(data.versions || {}).reduce((acc, [lang, versionData]) => {
+        const version = versionData as Record<string, any>;
+        return {
+          ...acc,
+          [lang]: {
+            lyrics: version.lyrics || '',
+            contributors: version.contributors || [],
+            createdAt:
+              version.createdAt && typeof version.createdAt.toDate === 'function'
+                ? version.createdAt.toDate()
+                : null,
+            updatedAt:
+              version.updatedAt && typeof version.updatedAt.toDate === 'function'
+                ? version.updatedAt.toDate()
+                : null,
+          },
+        }
+      }, {} as Record<string, SongVersion>),
     } as Song
   })
 }
@@ -125,78 +153,173 @@ export const getSongById = async (id: string) => {
 
   if (!songDoc.exists()) return null
 
-  await updateDoc(songRef, { views: increment(1) })
+  await updateDoc(songRef, { 'info.views': increment(1) })
 
+  const data = songDoc.data()
   return {
     id: songDoc.id,
-    ...songDoc.data(),
-    createdAt:
-      songDoc.data().createdAt && typeof songDoc.data().createdAt.toDate === 'function'
-        ? songDoc.data().createdAt.toDate()
-        : null,
-    updatedAt:
-      songDoc.data().updatedAt && typeof songDoc.data().updatedAt.toDate === 'function'
-        ? songDoc.data().updatedAt.toDate()
-        : null,
+    info: {
+      ...data.info,
+      createdAt:
+        data.info?.createdAt && typeof data.info.createdAt.toDate === 'function'
+          ? data.info.createdAt.toDate()
+          : null,
+      updatedAt:
+        data.info?.updatedAt && typeof data.info.updatedAt.toDate === 'function'
+          ? data.info.updatedAt.toDate()
+          : null,
+    },
+    versions: Object.entries(data.versions || {}).reduce((acc, [lang, versionData]) => {
+      const version = versionData as Record<string, any>;
+      return {
+        ...acc,
+        [lang]: {
+          lyrics: version.lyrics || '',
+          contributors: version.contributors || [],
+          createdAt:
+            version.createdAt && typeof version.createdAt.toDate === 'function'
+              ? version.createdAt.toDate()
+              : null,
+          updatedAt:
+            version.updatedAt && typeof version.updatedAt.toDate === 'function'
+              ? version.updatedAt.toDate()
+              : null,
+        },
+      }
+    }, {} as Record<string, SongVersion>),
   } as Song
 }
 
 export const searchSongs = async (searchTerm: string, language?: Language) => {
   const songsRef = collection(db, 'songs')
-  const q = query(songsRef, where('approved', '==', true))
+  const q = query(songsRef, where('info.approved', '==', true))
 
   const snapshot = await getDocs(q)
 
   const filteredSongs = snapshot.docs
-    .map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
+    .map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        info: {
+          ...data.info,
           createdAt:
-            doc.data().createdAt && typeof doc.data().createdAt.toDate === 'function'
-              ? doc.data().createdAt.toDate()
+            data.info?.createdAt && typeof data.info.createdAt.toDate === 'function'
+              ? data.info.createdAt.toDate()
               : null,
           updatedAt:
-            doc.data().updatedAt && typeof doc.data().updatedAt.toDate === 'function'
-              ? doc.data().updatedAt.toDate()
+            data.info?.updatedAt && typeof data.info.updatedAt.toDate === 'function'
+              ? data.info.updatedAt.toDate()
               : null,
-        }) as Song,
-    )
+        },
+        versions: Object.entries(data.versions || {}).reduce((acc, [lang, versionData]) => {
+          const version = versionData as Record<string, any>;
+          return {
+            ...acc,
+            [lang]: {
+              lyrics: version.lyrics || '',
+              contributors: version.contributors || [],
+              createdAt:
+                version.createdAt && typeof version.createdAt.toDate === 'function'
+                  ? version.createdAt.toDate()
+                  : null,
+              updatedAt:
+                version.updatedAt && typeof version.updatedAt.toDate === 'function'
+                  ? version.updatedAt.toDate()
+                  : null,
+            },
+          }
+        }, {} as Record<string, SongVersion>),
+      } as Song
+    })
     .filter((song) => {
-      const matchesSearch =
-        song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.lyrics.toLowerCase().includes(searchTerm.toLowerCase())
-
-      const matchesLanguage = language ? song.language === language : true
-
-      return matchesSearch && matchesLanguage
+      const hasLanguageVersion = language ? !!song.versions[language] : true
+      
+      const infoMatches = 
+        song.info.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        song.info.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (song.info.altNames && song.info.altNames.some(altName => 
+          altName.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
+        
+      const lyricsMatches = Object.values(song.versions).some(version => 
+        version.lyrics.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      
+      return hasLanguageVersion && (infoMatches || lyricsMatches)
     })
 
   return {
     songs: filteredSongs,
-    artists: [...new Set(filteredSongs.map((song) => song.artist))],
+    artists: [...new Set(filteredSongs.map((song) => song.info.artist))],
     totalResults: filteredSongs.length,
   }
 }
 
 export const addSong = async (
-  song: Omit<Song, 'id' | 'createdAt' | 'updatedAt' | 'views' | 'likes'>,
+  songInfo: Omit<SongInfo, 'createdAt' | 'updatedAt' | 'views' | 'likes'>,
+  initialVersion: { lyrics: string; language: Language }
 ) => {
   const user = auth.currentUser
   if (!user) throw new Error('Bạn phải đăng nhập để thêm bài hát')
 
-  const songData = {
-    ...song,
+  const timestamp = serverTimestamp()
+  
+  const songInfoData = {
+    ...songInfo,
     contributors: [user.uid],
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
     views: 0,
     likes: 0,
   }
+  
+  const versionData = {
+    lyrics: initialVersion.lyrics,
+    contributors: [user.uid],
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+  
+  const songData = {
+    info: songInfoData,
+    versions: {
+      [initialVersion.language]: versionData
+    }
+  }
 
   return addDoc(collection(db, 'songs'), songData)
+}
+
+export const addSongVersion = async (
+  songId: string,
+  language: Language,
+  lyrics: string
+) => {
+  const user = auth.currentUser
+  if (!user) throw new Error('Bạn phải đăng nhập để thêm phiên bản bài hát')
+  
+  const songRef = doc(db, 'songs', songId)
+  const songDoc = await getDoc(songRef)
+  
+  if (!songDoc.exists()) {
+    throw new Error('Bài hát không tồn tại')
+  }
+  
+  const timestamp = serverTimestamp()
+  const versionData = {
+    lyrics,
+    contributors: [user.uid],
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+  
+  await updateDoc(songRef, {
+    [`versions.${language}`]: versionData,
+    'info.updatedAt': timestamp
+  })
+  
+  return { success: true }
 }
 
 export const saveSong = async (songId: string) => {
@@ -207,7 +330,7 @@ export const saveSong = async (songId: string) => {
   const userPrefsDoc = await getDoc(userPrefsRef)
 
   const songRef = doc(db, 'songs', songId)
-  await updateDoc(songRef, { likes: increment(1) })
+  await updateDoc(songRef, { 'info.likes': increment(1) })
 
   if (userPrefsDoc.exists()) {
     const savedSongs = userPrefsDoc.data().savedSongs || []
@@ -249,27 +372,47 @@ export const getTopSongs = async (sortBy: 'views' | 'likes' = 'views', limit_cou
   const songsRef = collection(db, 'songs')
   const q = query(
     songsRef,
-    where('approved', '==', true),
-    orderBy(sortBy, 'desc'),
+    where('info.approved', '==', true),
+    orderBy(`info.${sortBy}`, 'desc'),
     limit(limit_count),
   )
 
   const snapshot = await getDocs(q)
-  return snapshot.docs.map(
-    (doc) =>
-      ({
-        id: doc.id,
-        ...doc.data(),
+  return snapshot.docs.map((doc) => {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      info: {
+        ...data.info,
         createdAt:
-          doc.data().createdAt && typeof doc.data().createdAt.toDate === 'function'
-            ? doc.data().createdAt.toDate()
+          data.info?.createdAt && typeof data.info.createdAt.toDate === 'function'
+            ? data.info.createdAt.toDate()
             : null,
         updatedAt:
-          doc.data().updatedAt && typeof doc.data().updatedAt.toDate === 'function'
-            ? doc.data().updatedAt.toDate()
+          data.info?.updatedAt && typeof data.info.updatedAt.toDate === 'function'
+            ? data.info.updatedAt.toDate()
             : null,
-      }) as Song,
-  )
+      },
+      versions: Object.entries(data.versions || {}).reduce((acc, [lang, versionData]) => {
+        const version = versionData as Record<string, any>;
+        return {
+          ...acc,
+          [lang]: {
+            lyrics: version.lyrics || '',
+            contributors: version.contributors || [],
+            createdAt:
+              version.createdAt && typeof version.createdAt.toDate === 'function'
+                ? version.createdAt.toDate()
+                : null,
+            updatedAt:
+              version.updatedAt && typeof version.updatedAt.toDate === 'function'
+                ? version.updatedAt.toDate()
+                : null,
+          },
+        }
+      }, {} as Record<string, SongVersion>),
+    } as Song
+  })
 }
 
 export const isSongSaved = async (songId: string) => {
@@ -293,7 +436,7 @@ export const removeSavedSong = async (songId: string) => {
   const userPrefsDoc = await getDoc(userPrefsRef)
 
   const songRef = doc(db, 'songs', songId)
-  await updateDoc(songRef, { likes: increment(-1) })
+  await updateDoc(songRef, { 'info.likes': increment(-1) })
 
   if (userPrefsDoc.exists()) {
     const savedSongs = userPrefsDoc.data().savedSongs || []
@@ -312,9 +455,9 @@ export async function getUserSongs(userId: string): Promise<Song[]> {
     const songsCollection = collection(db, 'songs')
     const q = query(
       songsCollection,
-      where('contributors', 'array-contains', userId),
-      where('approved', '==', true),
-      orderBy('createdAt', 'desc'),
+      where('info.contributors', 'array-contains', userId),
+      where('info.approved', '==', true),
+      orderBy('info.createdAt', 'desc'),
     )
 
     const querySnapshot = await getDocs(q)
@@ -324,15 +467,35 @@ export async function getUserSongs(userId: string): Promise<Song[]> {
       const data = doc.data()
       songs.push({
         id: doc.id,
-        ...data,
-        createdAt:
-          data.createdAt && typeof data.createdAt.toDate === 'function'
-            ? data.createdAt.toDate()
-            : null,
-        updatedAt:
-          data.updatedAt && typeof data.updatedAt.toDate === 'function'
-            ? data.updatedAt.toDate()
-            : null,
+        info: {
+          ...data.info,
+          createdAt:
+            data.info?.createdAt && typeof data.info.createdAt.toDate === 'function'
+              ? data.info.createdAt.toDate()
+              : null,
+          updatedAt:
+            data.info?.updatedAt && typeof data.info.updatedAt.toDate === 'function'
+              ? data.info.updatedAt.toDate()
+              : null,
+        },
+        versions: Object.entries(data.versions || {}).reduce((acc, [lang, versionData]) => {
+          const version = versionData as Record<string, any>;
+          return {
+            ...acc,
+            [lang]: {
+              lyrics: version.lyrics || '',
+              contributors: version.contributors || [],
+              createdAt:
+                version.createdAt && typeof version.createdAt.toDate === 'function'
+                  ? version.createdAt.toDate()
+                  : null,
+              updatedAt:
+                version.updatedAt && typeof version.updatedAt.toDate === 'function'
+                  ? version.updatedAt.toDate()
+                  : null,
+            },
+          }
+        }, {} as Record<string, SongVersion>),
       } as Song)
     })
 
@@ -368,15 +531,35 @@ export async function getUserFavorites(userId: string): Promise<Song[]> {
       const data = doc.data()
       songs.push({
         id: doc.id,
-        ...data,
-        createdAt:
-          data.createdAt && typeof data.createdAt.toDate === 'function'
-            ? data.createdAt.toDate()
-            : null,
-        updatedAt:
-          data.updatedAt && typeof data.updatedAt.toDate === 'function'
-            ? data.updatedAt.toDate()
-            : null,
+        info: {
+          ...data.info,
+          createdAt:
+            data.info?.createdAt && typeof data.info.createdAt.toDate === 'function'
+              ? data.info.createdAt.toDate()
+              : null,
+          updatedAt:
+            data.info?.updatedAt && typeof data.info.updatedAt.toDate === 'function'
+              ? data.info.updatedAt.toDate()
+              : null,
+        },
+        versions: Object.entries(data.versions || {}).reduce((acc, [lang, versionData]) => {
+          const version = versionData as Record<string, any>;
+          return {
+            ...acc,
+            [lang]: {
+              lyrics: version.lyrics || '',
+              contributors: version.contributors || [],
+              createdAt:
+                version.createdAt && typeof version.createdAt.toDate === 'function'
+                  ? version.createdAt.toDate()
+                  : null,
+              updatedAt:
+                version.updatedAt && typeof version.updatedAt.toDate === 'function'
+                  ? version.updatedAt.toDate()
+                  : null,
+            },
+          }
+        }, {} as Record<string, SongVersion>),
       } as Song)
     })
 

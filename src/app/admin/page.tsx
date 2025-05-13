@@ -1,12 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Trash, Edit, Check, RefreshCw, Save, ArrowLeft, AlertCircle, Eye } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { Trash, Edit, Check, RefreshCw, Save, ArrowLeft, AlertCircle, Eye, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import type { Song } from '../types'
 import { auth, db } from '../firebase/config'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
 import { updateDoc, doc, deleteDoc } from 'firebase/firestore'
+
+enum Language {
+  VIETNAMESE = 'vietnamese',
+  ENGLISH = 'english',
+  KOREAN = 'korean',
+  JAPANESE = 'japanese',
+  CHINESE = 'chinese',
+  ROMAJI = 'romaji',
+  OTHER = 'other',
+}
 
 interface LyricsReport {
   id: string
@@ -22,11 +32,25 @@ interface LyricsReport {
   reporterEmail?: string
 }
 
+const getLangDisplayName = (lang: Language): string => {
+  const langMap: Record<string, string> = {
+    [Language.VIETNAMESE]: 'Tiếng Việt',
+    [Language.ENGLISH]: 'Tiếng Anh',
+    [Language.KOREAN]: 'Tiếng Hàn',
+    [Language.JAPANESE]: 'Tiếng Nhật',
+    [Language.CHINESE]: 'Tiếng Trung',
+    [Language.ROMAJI]: 'Tiếng Nhật (Romaji)',
+    [Language.OTHER]: 'Khác'
+  };
+  return langMap[lang] || lang;
+}
+
 export default function AdminPage() {
   type status = 'approved' | 'pending'
 
   const [pendingSongs, setPendingSongs] = useState<Song[]>([])
   const [approvedSongs, setApprovedSongs] = useState<Song[]>([])
+  const [filteredApprovedSongs, setFilteredApprovedSongs] = useState<Song[]>([])
   const [lyricsReports, setLyricsReports] = useState<LyricsReport[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('pending')
@@ -37,7 +61,68 @@ export default function AdminPage() {
   const [reportDetailModal, setReportDetailModal] = useState<null | LyricsReport>(null)
   const router = useRouter()
   const adminUid = process.env.NEXT_PUBLIC_ADMIN_UID
-  const [altNamesInput, setAltNamesInput] = useState<string[]>(editingSong?.altNames || [])
+  const [altNamesInput, setAltNamesInput] = useState<string[]>([])
+  
+  const [activeLanguageTab, setActiveLanguageTab] = useState<Language>(Language.VIETNAMESE)
+  
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [totalPages, setTotalPages] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [lastDocTimestamp, setLastDocTimestamp] = useState<string | null>(null)
+  
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const fetchLyricsReports = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/report-lyrics')
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports')
+      }
+      const reports = await response.json()
+      setLyricsReports(reports)
+    } catch (err) {
+      console.error('Failed to fetch lyrics reports', err)
+      setErrorMessage('Failed to load lyrics reports. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchSongs = useCallback(async () => {
+    setLoading(true)
+    try {
+      const pendingRes = await fetch('/api/pending-song', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const pendingData = await pendingRes.json()
+      setPendingSongs(pendingData)
+
+      const approvedRes = await fetch('/api/songs?limit=100')
+      const approvedData = await approvedRes.json()
+      setApprovedSongs(approvedData)
+      setFilteredApprovedSongs(approvedData)
+      setTotalPages(Math.ceil(approvedData.length / itemsPerPage))
+      
+      if (approvedData.length > 0) {
+        const lastDoc = approvedData[approvedData.length - 1]
+        if (lastDoc.createdAt) {
+          setLastDocTimestamp(new Date(lastDoc.createdAt).getTime().toString())
+        }
+        setHasMore(approvedData.length >= 100)
+      }
+    } catch (err) {
+      console.error('Failed to fetch songs', err)
+      setErrorMessage('Failed to load songs. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [itemsPerPage])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -55,48 +140,90 @@ export default function AdminPage() {
     })
 
     return () => unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, adminUid])
 
   useEffect(() => {
-    setAltNamesInput(editingSong?.altNames || [])
+    if (editingSong) {
+      setAltNamesInput(editingSong.info?.altNames || [])
+      
+      if (editingSong.versions) {
+        const availableLanguages = Object.keys(editingSong.versions) as Language[]
+        if (availableLanguages.length > 0) {
+          setActiveLanguageTab(availableLanguages[0])
+        }
+      }
+    }
   }, [editingSong])
 
-  const fetchSongs = async () => {
-    setLoading(true)
-    try {
-      const pendingRes = await fetch('/api/pending-song')
-      const pendingData = await pendingRes.json()
-      setPendingSongs(pendingData)
-
-      const approvedRes = await fetch('/api/songs')
-      const approvedData = await approvedRes.json()
-      setApprovedSongs(approvedData)
-    } catch (err) {
-      console.error('Failed to fetch songs', err)
-      setErrorMessage('Failed to load songs. Please try again.')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredApprovedSongs(approvedSongs)
+      setTotalPages(Math.ceil(approvedSongs.length / itemsPerPage))
+    } else {
+      const searchTermLower = searchTerm.toLowerCase()
+      const filtered = approvedSongs.filter(song => {
+        const titleMatch = song.info?.title?.toLowerCase().includes(searchTermLower)
+        const artistMatch = song.info?.artist?.toLowerCase().includes(searchTermLower)
+        const altNamesMatch = song.info?.altNames?.some(name => 
+          name.toLowerCase().includes(searchTermLower)
+        )
+        
+        return titleMatch || artistMatch || altNamesMatch
+      })
+      
+      setFilteredApprovedSongs(filtered)
+      setTotalPages(Math.ceil(filtered.length / itemsPerPage))
+      setCurrentPage(1)
     }
-  }
+  }, [searchTerm, approvedSongs, itemsPerPage])
 
-  const fetchLyricsReports = async () => {
+  const loadMoreSongs = async () => {
+    if (!lastDocTimestamp || !hasMore) return
+    
     setLoading(true)
     try {
-      const response = await fetch('/api/report-lyrics')
-      if (!response.ok) {
-        throw new Error('Failed to fetch reports')
+      const approvedRes = await fetch(`/api/songs?limit=100&startAfter=${lastDocTimestamp}`)
+      const newSongs = await approvedRes.json()
+      
+      if (newSongs.length > 0) {
+        const lastDoc = newSongs[newSongs.length - 1]
+        if (lastDoc.createdAt) {
+          setLastDocTimestamp(new Date(lastDoc.createdAt).getTime().toString())
+        }
+        
+        const updatedSongs = [...approvedSongs, ...newSongs]
+        setApprovedSongs(updatedSongs)
+        setFilteredApprovedSongs(updatedSongs)
+        setTotalPages(Math.ceil(updatedSongs.length / itemsPerPage))
+        setHasMore(newSongs.length >= 100)
+      } else {
+        setHasMore(false)
       }
-      const reports = await response.json()
-      setLyricsReports(reports)
     } catch (err) {
-      console.error('Failed to fetch lyrics reports', err)
-      setErrorMessage('Failed to load lyrics reports. Please try again.')
+      console.error('Failed to load more songs', err)
+      setErrorMessage('Failed to load more songs. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const approveSong = async (id: string) => {
+  const getCurrentPageItems = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredApprovedSongs.slice(startIndex, endIndex)
+  }
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return
+    setCurrentPage(page)
+  }
+  
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+  }
+
+  const approveSong = async (id: string, originalSongId: string | null | undefined) => {
     try {
       setLoading(true)
       const res = await fetch('/api/approve-song', {
@@ -104,7 +231,7 @@ export default function AdminPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, originalSongId }),
       })
 
       if (!res.ok) {
@@ -236,17 +363,6 @@ export default function AdminPage() {
     setEditingSong(null)
   }
 
-  const handleEditChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => {
-    if (!editingSong) return
-
-    setEditingSong({
-      ...editingSong,
-      [e.target.name]: e.target.value,
-    })
-  }
-
   const handleAddAltNameInput = () => setAltNamesInput([...altNamesInput, ''])
   const handleRemoveAltNameInput = (idx: number) => setAltNamesInput(altNamesInput.filter((_, i) => i !== idx))
   const handleAltNameInputChange = (idx: number, value: string) => setAltNamesInput(altNamesInput.map((n, i) => i === idx ? value : n))
@@ -257,11 +373,15 @@ export default function AdminPage() {
     try {
       setLoading(true)
 
+      // const collection = editingTab === 'approved' ? 'songs' : 'pendingSongs'
+      
       const updatedSong = {
         ...editingSong,
-        altNames: altNamesInput.filter(Boolean),
-        updatedAt: new Date(),
-        createdAt: editingSong.createdAt instanceof Date ? editingSong.createdAt : new Date(editingSong.createdAt || Date.now()),
+        info: {
+          ...editingSong.info,
+          altNames: altNamesInput.filter(Boolean),
+          updatedAt: new Date(),
+        },
         status: editingTab,
       }
 
@@ -274,10 +394,12 @@ export default function AdminPage() {
       })
 
       if (!res.ok) {
-        throw new Error('Failed to update song')
+        const errorData = await res.json().catch(() => ({}))
+        console.error('Server response:', errorData)
+        throw new Error(`Failed to update song: ${errorData.error || res.status}`)
       }
 
-      if (editingSong.approved) {
+      if (editingTab === 'approved') {
         setApprovedSongs((prev) =>
           prev.map((song) => (song.id === editingSong.id ? updatedSong : song)),
         )
@@ -312,6 +434,9 @@ export default function AdminPage() {
   }
 
   if (editingSong) {
+    const availableLanguages = Object.keys(editingSong.versions || {}) as Language[]
+    const currentLyrics = editingSong.versions[activeLanguageTab]?.lyrics || ''
+    
     return (
       <div className="p-4 max-w-4xl mx-auto">
         <div className="flex items-center mb-6 gap-2">
@@ -321,7 +446,14 @@ export default function AdminPage() {
           >
             <ArrowLeft size={18} className="mr-1" /> Back to List
           </button>
-          <h1 className="text-2xl font-bold ml-4">Edit Song</h1>
+          <h1 className="text-2xl font-bold ml-4">
+            {editingSong.originalSongId ? 'Edit Pending Lyrics' : 'Edit Song'}
+            {editingSong.originalSongId && (
+              <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                lyrics mới cho bài {editingSong.originalSongId.slice(0, 6)}...
+              </span>
+            )}
+          </h1>
         </div>
 
         {errorMessage && (
@@ -337,10 +469,19 @@ export default function AdminPage() {
               <input
                 type="text"
                 name="title"
-                value={editingSong.title}
-                onChange={handleEditChange}
+                value={editingSong.info?.title || ''}
+                onChange={e => 
+                  setEditingSong({
+                    ...editingSong, 
+                    info: { ...editingSong.info, title: e.target.value }
+                  })
+                }
                 className="w-full border rounded p-2"
+                disabled={!!editingSong.originalSongId}
               />
+              {editingSong.originalSongId && (
+                <p className="text-xs text-gray-500 mt-1">Title không thể thay đổi khi thêm lyrics mới</p>
+              )}
             </div>
 
             <div>
@@ -367,42 +508,154 @@ export default function AdminPage() {
               <input
                 type="text"
                 name="artist"
-                value={editingSong.artist}
-                onChange={handleEditChange}
+                value={editingSong.info?.artist || ''}
+                onChange={e => 
+                  setEditingSong({
+                    ...editingSong, 
+                    info: { ...editingSong.info, artist: e.target.value }
+                  })
+                }
                 className="w-full border rounded p-2"
+                disabled={!!editingSong.originalSongId}
               />
+              {editingSong.originalSongId && (
+                <p className="text-xs text-gray-500 mt-1">Artist không thể thay đổi khi thêm lyrics mới</p>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {availableLanguages.length > 1 && !editingSong.originalSongId && (
             <div>
-              <label className="block mb-1 font-medium">Language</label>
-              <select
-                name="language"
-                value={editingSong.language}
-                onChange={handleEditChange}
-                className="w-full border rounded p-2"
-              >
-                <option value="vietnamese">Vietnamese</option>
-                <option value="english">English</option>
-                <option value="korean">Korean</option>
-                <option value="japanese">Japanese</option>
-                <option value="romaji">Japanese (Romaji)</option>
-                <option value="chinese">Chinese</option>
-                <option value="other">Other</option>
-              </select>
+              <label className="block mb-1 font-medium">Ngôn ngữ</label>
+              <div className="flex border-b mb-4">
+                {availableLanguages.map((lang) => (
+                  <button
+                    key={lang}
+                    className={`py-2 px-4 border-b-2 ${
+                      activeLanguageTab === lang
+                        ? 'border-blue-500 text-blue-500'
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                    onClick={() => setActiveLanguageTab(lang)}
+                  >
+                    {getLangDisplayName(lang)}
+                  </button>
+                ))}
+                <button
+                  onClick={() => {
+                    const newLang = Object.values(Language).find(l => !availableLanguages.includes(l));
+                    if (newLang) {
+                      setEditingSong({
+                        ...editingSong,
+                        versions: {
+                          ...editingSong.versions,
+                          [newLang]: { 
+                            lyrics: '',
+                            contributors: editingSong.info?.contributors || [],
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                          }
+                        }
+                      });
+                      setActiveLanguageTab(newLang);
+                    }
+                  }}
+                  className="ml-2 py-1 px-2 text-sm bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200"
+                >
+                  + Thêm ngôn ngữ
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {editingSong.originalSongId ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 font-medium">Language</label>
+                <select
+                  name="language"
+                  value={activeLanguageTab || 'vietnamese'}
+                  onChange={e => {
+                    const oldLang = activeLanguageTab;
+                    const newLang = e.target.value as Language;
+                    if (oldLang && editingSong.versions[oldLang]) {
+                      const updatedVersions = { ...editingSong.versions };
+                      updatedVersions[newLang] = updatedVersions[oldLang];
+                      delete updatedVersions[oldLang];
+                      setEditingSong({
+                        ...editingSong,
+                        versions: updatedVersions
+                      });
+                      setActiveLanguageTab(newLang);
+                    }
+                  }}
+                  className="w-full border rounded p-2"
+                >
+                  <option value="vietnamese">Vietnamese</option>
+                  <option value="english">English</option>
+                  <option value="korean">Korean</option>
+                  <option value="japanese">Japanese</option>
+                  <option value="romaji">Japanese (Romaji)</option>
+                  <option value="chinese">Chinese</option>
+                  <option value="other">Other</option>
+                </select>
+                <p className="text-xs text-blue-500 font-medium mt-1">
+                  Đây là lyrics mới {activeLanguageTab} cho bài gốc
+                </p>
+              </div>
+            </div>
+          ) : null}
 
           <div>
-            <label className="block mb-1 font-medium">Lyrics</label>
+            <label className="block mb-1 font-medium">
+              Lyrics {getLangDisplayName(activeLanguageTab)}
+            </label>
             <textarea
               name="lyrics"
-              value={editingSong.lyrics}
-              onChange={handleEditChange}
+              value={currentLyrics}
+              onChange={e => {
+                const lang = activeLanguageTab;
+                if (lang) {
+                  setEditingSong({
+                    ...editingSong,
+                    versions: {
+                      ...editingSong.versions,
+                      [lang]: {
+                        ...editingSong.versions[lang],
+                        lyrics: e.target.value
+                      }
+                    }
+                  });
+                }
+              }}
               rows={15}
               className="w-full border rounded p-2 font-mono"
             ></textarea>
+            {!editingSong.originalSongId && (
+              <div className="mt-2 flex justify-end">
+                <button 
+                  onClick={() => {
+                    if (window.confirm(`Bạn có chắc muốn xóa lyrics ${getLangDisplayName(activeLanguageTab)} không?`)) {
+                      const updatedVersions = { ...editingSong.versions };
+                      delete updatedVersions[activeLanguageTab];
+                      setEditingSong({
+                        ...editingSong,
+                        versions: updatedVersions
+                      });
+                      if (Object.keys(updatedVersions).length > 0) {
+                        setActiveLanguageTab(Object.keys(updatedVersions)[0] as Language);
+                      } else {
+                        setActiveLanguageTab(Language.VIETNAMESE);
+                      }
+                    }
+                  }}
+                  className="px-2 py-1 bg-red-100 text-red-600 text-sm rounded hover:bg-red-200"
+                  disabled={Object.keys(editingSong.versions || {}).length <= 1}
+                >
+                  Xóa lyrics này
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2">
@@ -489,6 +742,21 @@ export default function AdminPage() {
         >
           <RefreshCw size={16} className={`mr-1 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </button>
+        
+        {activeTab === 'approved' && (
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Search className="w-4 h-4 text-gray-500" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleSearch}
+              placeholder="Tìm theo tên hoặc ca sĩ..."
+              className="pl-10 pr-4 py-1 border rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        )}
       </div>
 
       {activeTab === 'pending' && (
@@ -499,6 +767,7 @@ export default function AdminPage() {
                 <th className="py-2 px-3 border-b text-left">Title</th>
                 <th className="py-2 px-3 border-b text-left">Artist</th>
                 <th className="py-2 px-3 border-b text-left">Language</th>
+                <th className="py-2 px-3 border-b text-left">Type</th>
                 <th className="py-2 px-3 border-b text-left">Date</th>
                 <th className="py-2 px-3 border-b text-left">Actions</th>
               </tr>
@@ -506,23 +775,36 @@ export default function AdminPage() {
             <tbody>
               {pendingSongs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-4 text-center text-gray-500">
+                  <td colSpan={6} className="py-4 text-center text-gray-500">
                     No pending songs found
                   </td>
                 </tr>
               ) : (
                 pendingSongs.map((song) => (
                   <tr key={song.id} className="hover:bg-gray-50">
-                    <td className="py-2 px-3 border-b">{song.title}</td>
-                    <td className="py-2 px-3 border-b">{song.artist}</td>
-                    <td className="py-2 px-3 border-b">{song.language}</td>
+                    <td className="py-2 px-3 border-b">{song.info?.title}</td>
+                    <td className="py-2 px-3 border-b">{song.info?.artist}</td>
                     <td className="py-2 px-3 border-b">
-                      {new Date(song.createdAt).toLocaleDateString()}
+                      {Object.keys(song.versions || {}).length > 0 ? Object.keys(song.versions)[0] : 'N/A'}
+                    </td>
+                    <td className="py-2 px-3 border-b">
+                      {song.originalSongId ? (
+                        <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                          Lyrics mới ({song.originalSongId.slice(0, 6)}...)
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                          Bài hát mới
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2 px-3 border-b">
+                      {new Date(song.info?.createdAt || Date.now()).toLocaleDateString()}
                     </td>
                     <td className="py-2 px-3 border-b">
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => approveSong(song.id)}
+                          onClick={() => approveSong(song.id, song.originalSongId)}
                           className="p-1 text-green-600 hover:text-green-800"
                           title="Approve"
                         >
@@ -542,6 +824,17 @@ export default function AdminPage() {
                         >
                           <Trash size={18} />
                         </button>
+                        <button
+                          onClick={() => {
+                            const language = Object.keys(song.versions || {})[0] as Language;
+                            const lyrics = song.versions[language]?.lyrics || '';
+                            alert(`Lyrics (${language}):\n\n${lyrics}`);
+                          }}
+                          className="p-1 text-gray-600 hover:text-gray-800"
+                          title="Xem lyrics"
+                        >
+                          <Eye size={18} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -553,67 +846,150 @@ export default function AdminPage() {
       )}
 
       {activeTab === 'approved' && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="py-2 px-3 border-b text-left">Title</th>
-                <th className="py-2 px-3 border-b text-left">Artist</th>
-                <th className="py-2 px-3 border-b text-left">Language</th>
-                <th className="py-2 px-3 border-b text-left">Views</th>
-                <th className="py-2 px-3 border-b text-left">Likes</th>
-                <th className="py-2 px-3 border-b text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {approvedSongs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-4 text-center text-gray-500">
-                    No approved songs found
-                  </td>
+        <div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border rounded">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="py-2 px-3 border-b text-left">Title</th>
+                  <th className="py-2 px-3 border-b text-left">Artist</th>
+                  <th className="py-2 px-3 border-b text-left">Language</th>
+                  <th className="py-2 px-3 border-b text-left">Views</th>
+                  <th className="py-2 px-3 border-b text-left">Likes</th>
+                  <th className="py-2 px-3 border-b text-left">Actions</th>
                 </tr>
-              ) : (
-                approvedSongs.map((song) => (
-                  <tr key={song.id} className="hover:bg-gray-50">
-                    <td className="py-2 px-3 border-b flex items-center gap-2">
-                      <span>{song.title}</span>
-                      {song && song.id && (
-                        <button
-                          onClick={() => router.push(`/songs/${song.id}`)}
-                          className="p-1 text-gray-500 hover:text-primary"
-                          title="Xem bài hát"
-                        >
-                          <Eye size={16} />
-                        </button>
-                      )}
-                    </td>
-                    <td className="py-2 px-3 border-b">{song.artist}</td>
-                    <td className="py-2 px-3 border-b">{song.language}</td>
-                    <td className="py-2 px-3 border-b">{song.views}</td>
-                    <td className="py-2 px-3 border-b">{song.likes || 0}</td>
-                    <td className="py-2 px-3 border-b">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => startEditing(song, 'approved')}
-                          className="p-1 text-blue-600 hover:text-blue-800"
-                          title="Edit"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          onClick={() => deleteSong(song.id, 'songs')}
-                          className="p-1 text-red-600 hover:text-red-800"
-                          title="Delete"
-                        >
-                          <Trash size={18} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {filteredApprovedSongs.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-4 text-center text-gray-500">
+                      {searchTerm ? 'Không tìm thấy bài hát nào' : 'Không có bài hát nào đã được duyệt'}
                     </td>
                   </tr>
-                ))
+                ) : (
+                  getCurrentPageItems().map((song) => (
+                    <tr key={song.id} className="hover:bg-gray-50">
+                      <td className="py-2 px-3 border-b flex items-center gap-2">
+                        <span>{song.info?.title}</span>
+                        {song && song.id && (
+                          <button
+                            onClick={() => router.push(`/songs/${song.id}`)}
+                            className="p-1 text-gray-500 hover:text-primary"
+                            title="Xem bài hát"
+                          >
+                            <Eye size={16} />
+                          </button>
+                        )}
+                      </td>
+                      <td className="py-2 px-3 border-b">{song.info?.artist}</td>
+                      <td className="py-2 px-3 border-b">
+                        {Object.keys(song.versions || {}).length > 0 ? Object.keys(song.versions)[0] : 'N/A'}
+                      </td>
+                      <td className="py-2 px-3 border-b">{song.info?.views || 0}</td>
+                      <td className="py-2 px-3 border-b">{song.info?.likes || 0}</td>
+                      <td className="py-2 px-3 border-b">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => startEditing(song, 'approved')}
+                            className="p-1 text-blue-600 hover:text-blue-800"
+                            title="Edit"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button
+                            onClick={() => deleteSong(song.id, 'songs')}
+                            className="p-1 text-red-600 hover:text-red-800"
+                            title="Delete"
+                          >
+                            <Trash size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredApprovedSongs.length > 0 && (
+            <div className="flex justify-between items-center mt-4">
+              <div className="flex items-center">
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="border rounded px-2 py-1 mr-2"
+                >
+                  <option value="10">10 / trang</option>
+                  <option value="20">20 / trang</option>
+                  <option value="50">50 / trang</option>
+                </select>
+                <span className="text-sm text-gray-600">
+                  {`Trang ${currentPage} / ${totalPages}`}
+                </span>
+              </div>
+              
+              <div className="flex items-center">
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-1 rounded border mr-1 disabled:opacity-50"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageToShow = i + 1
+                  if (totalPages > 5) {
+                    if (currentPage > 3) {
+                      if (i === 0) return currentPage - 2
+                      if (i === 1) return currentPage - 1
+                      if (i === 2) return currentPage
+                      if (i === 3) return currentPage + 1
+                      if (i === 4) return currentPage + 2
+                    }
+                  }
+                  return pageToShow
+                }).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => goToPage(page)}
+                    className={`w-8 h-8 mx-1 rounded ${
+                      currentPage === page
+                        ? 'bg-blue-500 text-white'
+                        : 'border hover:bg-gray-100'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-1 rounded border ml-1 disabled:opacity-50"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+              
+              {hasMore && (
+                <button 
+                  onClick={loadMoreSongs}
+                  disabled={loading}
+                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center"
+                >
+                  {loading ? (
+                    <RefreshCw size={16} className="mr-1 animate-spin" />
+                  ) : null}
+                  Tải thêm bài hát
+                </button>
               )}
-            </tbody>
-          </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -646,8 +1022,8 @@ export default function AdminPage() {
                         {song ? (
                           <div className="flex items-center gap-2">
                             <div>
-                              <div className="font-medium">{song.title}</div>
-                              <div className="text-sm text-gray-500">{song.artist}</div>
+                              <div className="font-medium">{song.info?.title || 'Không rõ'}</div>
+                              <div className="text-sm text-gray-500">{song.info?.artist || 'Không rõ'}</div>
                             </div>
                             {song && song.id && (
                               <button
@@ -744,7 +1120,7 @@ export default function AdminPage() {
               Đóng
             </button>
             <h2 className="text-xl font-bold mb-4">Chi tiết báo cáo lời bài hát</h2>
-            <div className="mb-2"><b>Bài hát:</b> {reportDetailModal.song ? reportDetailModal.song.title : 'Không rõ'}</div>
+            <div className="mb-2"><b>Bài hát:</b> {reportDetailModal.song ? reportDetailModal.song.info?.title : 'Không rõ'}</div>
             <div className="mb-2"><b>Người báo cáo:</b> {reportDetailModal.reporterName || reportDetailModal.reporterId || 'Ẩn danh'}</div>
             {reportDetailModal.reporterEmail && (
               <div className="mb-2"><b>Email:</b> {reportDetailModal.reporterEmail}</div>

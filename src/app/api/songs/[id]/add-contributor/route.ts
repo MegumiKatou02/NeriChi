@@ -20,7 +20,7 @@ export async function POST(
     }
 
     await updateDoc(songRef, {
-      contributors: arrayUnion(userId),
+      'info.contributors': arrayUnion(userId),
     })
 
     return NextResponse.json({ message: 'Contributor added successfully' })

@@ -128,11 +128,16 @@ export default function SearchBox({
             {searchResults.songs.slice(0, 10).map((song) => (
               <li key={song.id}>
                 <button
-                  onClick={() => handleSuggestionClick(song.title)}
+                  onClick={() => handleSuggestionClick(song.info.title)}
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  <p className="text-gray-900 dark:text-gray-100 font-medium">{song.title}</p>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">{song.artist}</p>
+                  <p className="text-gray-900 dark:text-gray-100 font-medium">{song.info.title}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">{song.info.artist}</p>
+                  {song.info.altNames && song.info.altNames.length > 0 && (
+                    <p className="text-gray-500 dark:text-gray-400 text-xs italic">
+                      {song.info.altNames.join(' • ')}
+                    </p>
+                  )}
                 </button>
               </li>
             ))}

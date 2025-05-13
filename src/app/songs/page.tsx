@@ -39,7 +39,7 @@ export default function SongsPage() {
 
         const filteredSongs = selectedLanguage
           ? response.filter(
-              (song) => song.language.toLowerCase() === selectedLanguage.toLowerCase(),
+              (song) => song.info.language.toLowerCase() === selectedLanguage.toLowerCase(),
             )
           : response
 

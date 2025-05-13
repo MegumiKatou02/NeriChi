@@ -4,13 +4,18 @@ import { db } from '@/app/firebase/config'
 
 export async function POST(req: NextRequest) {
   const songData = await req.json()
+  
+  const originalSongId = req.nextUrl.searchParams.get('originalSongId') || null
+
+  songData.info = {
+    ...songData.info,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }
 
   const docRef = await addDoc(collection(db, 'pendingSongs'), {
     ...songData,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    views: 0,
-    likes: 0,
+    originalSongId,
   })
 
   return NextResponse.json({ success: true, id: docRef.id })
@@ -21,17 +26,18 @@ export async function GET() {
 
   const songs = snapshot.docs.map((doc) => {
     const data = doc.data()
+
+    if (data.info.createdAt && typeof data.info.createdAt.toDate === 'function') {
+      data.info.createdAt = data.info.createdAt.toDate()
+    } 
+
+    if (data.info.updatedAt && typeof data.info.updatedAt.toDate === 'function') {
+      data.info.updatedAt = data.info.updatedAt.toDate()
+    }
+
     return {
-      id: doc.id,
       ...data,
-      createdAt:
-        data.createdAt && typeof data.createdAt.toDate === 'function'
-          ? data.createdAt.toDate().toISOString()
-          : null,
-      updatedAt:
-        data.updatedAt && typeof data.updatedAt.toDate === 'function'
-          ? data.updatedAt.toDate().toISOString()
-          : null,
+      id: doc.id,
     }
   })
 

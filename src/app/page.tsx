@@ -28,6 +28,7 @@ export default function HomePage() {
         const response = await fetchSongs()
 
         const totalSongs = response.length
+        
         const calculatedTotalPages = Math.ceil(totalSongs / songsPerPage)
         setTotalPages(calculatedTotalPages)
 

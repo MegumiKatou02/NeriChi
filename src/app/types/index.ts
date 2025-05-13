@@ -7,19 +7,34 @@ export interface User {
   createdAt: Date
 }
 
-export interface Song {
-  id: string
+export interface SongInfo {
   title: string
   altNames?: string[]
   artist: string
+  createdAt: Date
+  updatedAt: Date
+  views: number
+  likes: number
+  approved: boolean
+  contributors: string[]
+   language: string;
+}
+
+export interface SongVersion {
   lyrics: string
-  language: Language
+  language?: string 
   contributors: string[]
   createdAt: Date
   updatedAt: Date
-  approved: boolean
-  views: number
-  likes: number
+}
+
+export interface Song {
+  id: string
+  info: SongInfo
+  versions: {
+    [key in Language]?: SongVersion
+  }
+  originalSongId?: string
 }
 
 export interface SearchResult {

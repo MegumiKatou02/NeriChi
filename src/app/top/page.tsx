@@ -3,24 +3,33 @@
 import { useEffect, useState } from 'react'
 import MainLayout from '../components/layout/MainLayout'
 import { useSongs } from '../hooks/useSongs'
-import { Song } from '../types'
 import Link from 'next/link'
 import { FiEye, FiHeart, FiCalendar, FiMusic, FiBarChart, FiTrendingUp } from 'react-icons/fi'
 
+type SongWithInfo = {
+  id: string;
+  info: {
+    title: string;
+    artist: string;
+    createdAt: Date | null;
+    views: number;
+  };
+};
+
 export default function TopPage() {
   const { fetchTopSongs, loading } = useSongs()
-  const [topViewSongs, setTopViewSongs] = useState<Song[]>([])
-  const [topLikedSongs, setTopLikedSongs] = useState<Song[]>([])
+  const [topViewSongs, setTopViewSongs] = useState<SongWithInfo[]>([])
+  const [topLikedSongs, setTopLikedSongs] = useState<SongWithInfo[]>([])
   const [activeTab, setActiveTab] = useState<'views' | 'likes'>('views')
 
   useEffect(() => {
     const loadTopSongs = async () => {
       try {
         const topByViews = await fetchTopSongs('views', 10)
-        setTopViewSongs(topByViews)
+        setTopViewSongs(topByViews as unknown as SongWithInfo[])
 
         const topByLikes = await fetchTopSongs('likes', 10)
-        setTopLikedSongs(topByLikes)
+        setTopLikedSongs(topByLikes as unknown as SongWithInfo[])
       } catch (error) {
         console.error('Error fetching top songs:', error)
       }
@@ -29,7 +38,8 @@ export default function TopPage() {
     loadTopSongs()
   }, [fetchTopSongs])
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | null) => {
+    if (!date) return 'Không có ngày';
     return new Intl.DateTimeFormat('vi-VN', {
       year: 'numeric',
       month: 'long',
@@ -91,22 +101,22 @@ export default function TopPage() {
                       href={`/songs/${song.id}`}
                       className="text-lg font-semibold hover:text-primary"
                     >
-                      {song.title}
+                      {song.info.title}
                     </Link>
                     <div className="text-sm text-muted-foreground flex items-center mt-1">
-                      <FiMusic className="mr-1" /> {song.artist}
+                      <FiMusic className="mr-1" /> {song.info.artist}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between md:justify-end md:flex-1 text-sm gap-4">
                   <div className="flex items-center text-muted-foreground">
-                    <FiCalendar className="mr-1" /> {formatDate(song.createdAt)}
+                    <FiCalendar className="mr-1" /> {formatDate(song.info.createdAt)}
                   </div>
 
                   <div className="flex items-center gap-4">
                     <div className="flex items-center text-amber-500">
-                      <FiEye className="mr-1" /> {song.views.toLocaleString('vi-VN')}
+                      <FiEye className="mr-1" /> {song.info.views.toLocaleString('vi-VN')}
                     </div>
                   </div>
 

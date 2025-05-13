@@ -21,6 +21,7 @@ export default function SongCard({ song }: SongCardProps) {
   const [showShareOptions, setShowShareOptions] = useState(false)
   const [copied, setCopied] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
+  const [displayLanguage, setDisplayLanguage] = useState<string>('')
 
   useEffect(() => {
     const checkFavoriteStatus = async () => {
@@ -32,6 +33,20 @@ export default function SongCard({ song }: SongCardProps) {
 
     checkFavoriteStatus()
   }, [user, checkSavedStatus, song.id])
+
+  useEffect(() => {
+    if (song.versions) {
+      const languages = Object.keys(song.versions)
+      if (languages.length > 0) {
+        const firstLang = languages[0]
+        if (languages.length > 1) {
+          setDisplayLanguage(`${firstLang.charAt(0).toUpperCase() + firstLang.slice(1)} +${languages.length - 1}`)
+        } else {
+          setDisplayLanguage(firstLang.charAt(0).toUpperCase() + firstLang.slice(1))
+        }
+      }
+    }
+  }, [song])
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -64,7 +79,7 @@ export default function SongCard({ song }: SongCardProps) {
     e.stopPropagation()
 
     const url = `${window.location.origin}/songs/${song.id}`
-    const title = `${song.title} - ${song.artist} | NeriChi`
+    const title = `${song.info.title} - ${song.info.artist} | NeriChi`
 
     switch (platform) {
       case 'facebook':
@@ -99,17 +114,17 @@ export default function SongCard({ song }: SongCardProps) {
             </div>
             <div className="flex-grow min-w-0">
               <h3 className="text-lg font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                {song.title}
+                {song.info.title}
               </h3>
-              <p className="text-muted-foreground truncate">{song.artist}</p>
+              <p className="text-muted-foreground truncate">{song.info.artist}</p>
             </div>
           </div>
 
-          {song.contributors && song.contributors.length > 0 && (
+          {song.info.contributors && song.info.contributors.length > 0 && (
             <div className="mt-4 ml-16">
               <div className="flex justify-between items-center">
                 <div className="text-xs text-muted-foreground">Người đóng góp:</div>
-                <ContributorAvatars contributors={song.contributors} size="sm" maxDisplay={4} />
+                <ContributorAvatars contributors={song.info.contributors} size="sm" maxDisplay={4} />
               </div>
             </div>
           )}
@@ -119,12 +134,14 @@ export default function SongCard({ song }: SongCardProps) {
           <div className="flex space-x-4 text-sm text-muted-foreground">
             <div className="flex items-center">
               <FiEye className="mr-1" />
-              <span>{song.views.toLocaleString()}</span>
+              <span>{song.info.views.toLocaleString()}</span>
             </div>
             <div className="flex items-center">
+              {displayLanguage && (
               <span className="px-2 py-0.5 bg-secondary rounded-full text-xs">
-                {song.language.charAt(0).toUpperCase() + song.language.slice(1)}
+                  {displayLanguage}
               </span>
+              )}
             </div>
           </div>
 
@@ -136,7 +153,7 @@ export default function SongCard({ song }: SongCardProps) {
               title={isFavorite ? 'Hủy lưu bài hát' : 'Lưu bài hát'}
             >
               <div className="flex items-center">
-              <span className="mr-1 text-sm font-medium text-gray-500 dark:text-gray-300">{song.likes ?? 0}</span>
+              <span className="mr-1 text-sm font-medium text-gray-500 dark:text-gray-300">{song.info.likes ?? 0}</span>
               <FiHeart
                 className={`w-5 h-5 ${isSaving ? 'animate-pulse' : ''} ${isFavorite ? 'text-red-500 fill-red-500' : ''}`}
               />

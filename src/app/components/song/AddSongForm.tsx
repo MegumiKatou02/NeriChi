@@ -1,263 +1,368 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSongs } from '../../hooks/useSongs'
-import { Language } from '../../types'
-import { FiMusic, FiUser, FiType, FiFlag, FiAlertCircle } from 'react-icons/fi'
+import { useState, FormEvent, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Language, Song } from '../../types'
+import { useAuth } from '../../hooks/useAuth'
+import { FiMusic, FiCheckCircle, FiAlertCircle } from 'react-icons/fi'
+import { getSongById } from '../../firebase/services'
+import { auth } from '../../firebase/config'
 
 export default function AddSongForm() {
+  const { user } = useAuth()
   const router = useRouter()
-  const { createSong } = useSongs()
+  const searchParams = useSearchParams()
+  const songId = searchParams.get('songId')
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
   const [lyrics, setLyrics] = useState('')
   const [language, setLanguage] = useState<Language>(Language.VIETNAMESE)
-  const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [altNames, setAltNames] = useState<string[]>([])
+  const [isAddingNewLanguage, setIsAddingNewLanguage] = useState(false)
+  const [existingSong, setExistingSong] = useState<Song | null>(null)
+  const [altNames, setAltNames] = useState<string[]>([''])
 
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {}
-
-    if (!title.trim()) {
-      newErrors.title = 'Vui lòng nhập tên bài hát'
+  useEffect(() => {
+    const fetchSongDetails = async () => {
+      if (songId) {
+        setIsAddingNewLanguage(true)
+        try {
+          const song = await getSongById(songId)
+          if (song) {
+            setExistingSong(song)
+            
+            setTitle(song.info.title)
+            setArtist(song.info.artist)
+            
+            const availableLanguages = Object.keys(song.versions) as Language[]
+            const missingLanguages = Object.values(Language).filter(
+              lang => !availableLanguages.includes(lang)
+            )
+            
+            if (missingLanguages.length > 0) {
+              setLanguage(missingLanguages[0])
+            }
+          } else {
+            setError('Không tìm thấy bài hát')
+          }
+        } catch (err) {
+          console.error('Lỗi khi lấy thông tin bài hát:', err)
+          setError('Không thể tải thông tin bài hát')
+        }
+      }
     }
+    
+    fetchSongDetails()
+  }, [songId])
 
-    if (!artist.trim()) {
-      newErrors.artist = 'Vui lòng nhập tên ca sĩ'
-    }
-
-    if (!lyrics.trim()) {
-      newErrors.lyrics = 'Vui lòng nhập lời bài hát'
-    } else if (lyrics.trim().length < 30) {
-      newErrors.lyrics = 'Lời bài hát quá ngắn'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
-    if (!validate()) return
+    if (!user) {
+      setError('Bạn phải đăng nhập để thêm bài hát')
+      return
+    }
+
+    if (!title.trim() || !artist.trim() || !lyrics.trim()) {
+      setError('Vui lòng điền đầy đủ thông tin bài hát')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
 
     try {
-      setLoading(true)
-      await createSong({
-        title,
-        altNames: altNames.filter(Boolean),
-        artist,
-        lyrics,
-        language,
-        contributors: [],
-        approved: true,
-      })
+      if (isAddingNewLanguage && existingSong) {
+        const filteredAltNames = altNames.filter(name => name.trim() !== '')
+
+        const updatedSong = {
+          ...existingSong,
+          versions: {
+            ...existingSong.versions,
+            [language]: {
+              lyrics: lyrics.trim(),
+              contributors: [user.uid],
+              language: language,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }
+          },
+          info: {
+            ...existingSong.info,
+            altNames: [...(existingSong.info.altNames || []), ...filteredAltNames]
+          },
+          originalSongId: songId
+        }
+
+        const token = await auth.currentUser?.getIdToken();
+          
+        let attempts = 0;
+        let success = false;
+        let error = null;
+        
+        while (attempts < 3 && !success) {
+          try {
+            const response = await fetch(`/api/update-song/${songId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(updatedSong),
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            success = true;
+          } catch (err) {
+            attempts++;
+            error = err;
+            console.error(`Lỗi lần thử ${attempts}:`, err);
+            if (attempts < 3) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          }
+        }
+        
+        if (!success) {
+          throw error || new Error('Lỗi khi cập nhật bài hát');
+        }
+      } else {
+        const songData = {
+          info: {
+            altNames: altNames.filter(name => name.trim() !== ''),
+            title: title.trim(),
+            artist: artist.trim(),
+            approved: false,
+            contributors: [user.uid],
+            views: 0,
+            likes: 0,
+          },
+          versions: {
+            [language]: {
+              lyrics: lyrics.trim(),
+              language: language,
+              contributors: [user.uid],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }
+          }
+        }
+
+        const apiUrl = songId 
+          ? `/api/pending-song?originalSongId=${songId}`
+          : '/api/pending-song';
+
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(songData),
+        });
+      }
+      
       setSuccess(true)
       setTitle('')
       setArtist('')
       setLyrics('')
       setLanguage(Language.VIETNAMESE)
+
       setTimeout(() => {
-        router.push('/songs')
-      }, 3000)
-    } catch (error) {
-      console.error('Error adding song:', error)
-      setErrors({
-        submit: (error as Error).message || 'Đã xảy ra lỗi khi thêm bài hát. Vui lòng thử lại sau.',
-      })
+        router.push('/')
+      }, 2000)
+    } catch (err) {
+      console.error('Lỗi khi thêm bài hát:', err)
+      setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi khi thêm bài hát')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleAddAltName = () => setAltNames([...altNames, ''])
-  const handleRemoveAltName = (idx: number) => setAltNames(altNames.filter((_, i) => i !== idx))
-  const handleAltNameChange = (idx: number, value: string) => setAltNames(altNames.map((n, i) => i === idx ? value : n))
+  const addAltNameField = () => {
+    setAltNames([...altNames, ''])
+  }
+
+  const removeAltNameField = (index: number) => {
+    setAltNames(altNames.filter((_, i) => i !== index))
+  }
+
+  const handleAltNameChange = (index: number, value: string) => {
+    const newAltNames = [...altNames]
+    newAltNames[index] = value
+    setAltNames(newAltNames)
+  }
+
+  if (success) {
+    return (
+      <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
+        <div className="text-center">
+          <FiCheckCircle className="mx-auto h-12 w-12 text-green-500" />
+          <h2 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">Thêm bài hát thành công!</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Cảm ơn bạn đã đóng góp. Bài hát của bạn đang chờ phê duyệt.
+          </p>
+          <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            Đang chuyển hướng về trang chủ...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const getFormTitle = () => {
+    if (isAddingNewLanguage && existingSong) {
+      return `Thêm bài hát mới (${songId})`
+    }
+    return 'Thêm bài hát mới (0)'
+  }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-      <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Thêm lời bài hát mới
-        </h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Đóng góp lời bài hát yêu thích của bạn để chia sẻ với cộng đồng
-        </p>
-      </div>
-
-      {success ? (
-        <div className="p-6">
-          <div className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 p-4 rounded-md mb-6">
-            <p className="font-medium">Cảm ơn bạn đã đóng góp!</p>
-            <p className="mt-1">
-              Lời bài hát của bạn đã được gửi và đang chờ xét duyệt. Chúng tôi sẽ xem xét và xuất
-              bản sớm nhất có thể.
-            </p>
-            <p className="mt-3">Đang chuyển hướng về trang chủ...</p>
+    <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+      <div className="p-8">
+        <div className="flex items-center mb-6">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+            <FiMusic className="text-primary" />
           </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{getFormTitle()}</h2>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {errors.submit && (
-            <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-md flex items-start">
-              <FiAlertCircle className="mt-0.5 mr-2 flex-shrink-0" />
-              <p>{errors.submit}</p>
-            </div>
-          )}
 
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
+        {error && (
+          <div className="mb-4 p-4 rounded-md bg-destructive/10 text-destructive flex items-start">
+            <FiAlertCircle className="mr-2 mt-0.5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tên bài hát <span className="text-red-500">*</span>
             </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiMusic className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={`pl-10 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm rounded-md ${
-                  errors.title
-                    ? 'border-red-300 dark:border-red-700 text-red-900 dark:text-red-200 placeholder-red-300 dark:placeholder-red-700 bg-red-50 dark:bg-red-900/10'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                }`}
-                placeholder="Nhập tên bài hát"
-              />
-            </div>
-            {errors.title && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
-            )}
+            <input
+              type="text"
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              required
+              disabled={isAddingNewLanguage}
+            />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tên thay thế (Alt name)
+          <div className="mb-4">
+            <label htmlFor="artist" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Ca sĩ / Nghệ sĩ <span className="text-red-500">*</span>
             </label>
-            <div className="space-y-2 mt-1">
-              {altNames.map((name, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={e => handleAltNameChange(idx, e.target.value)}
-                    className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                    placeholder={`Tên thay thế #${idx + 1}`}
-                  />
-                  <button type="button" onClick={() => handleRemoveAltName(idx)} className="text-red-500 hover:text-red-700 px-2 py-1">X</button>
-                </div>
-              ))}
-              <button type="button" onClick={handleAddAltName} className="text-primary hover:underline text-sm mt-1">+ Thêm tên thay thế</button>
-            </div>
+            <input
+              type="text"
+              id="artist"
+              value={artist}
+              onChange={(e) => setArtist(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              required
+              disabled={isAddingNewLanguage}
+            />
           </div>
 
-          <div>
-            <label
-              htmlFor="artist"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Ca sĩ <span className="text-red-500">*</span>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tên thay thế
             </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiUser className="text-gray-400" />
+            {altNames.map((name, index) => (
+              <div key={index} className="flex mb-2">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => handleAltNameChange(index, e.target.value)}
+                  placeholder="Tên thay thế"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeAltNameField(index)}
+                  className="ml-2 px-2 py-2 text-red-500 hover:text-red-700"
+                  aria-label="Xóa tên thay thế"
+                >
+                  ✕
+                </button>
               </div>
-              <input
-                type="text"
-                id="artist"
-                value={artist}
-                onChange={(e) => setArtist(e.target.value)}
-                className={`pl-10 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm rounded-md ${
-                  errors.artist
-                    ? 'border-red-300 dark:border-red-700 text-red-900 dark:text-red-200 placeholder-red-300 dark:placeholder-red-700 bg-red-50 dark:bg-red-900/10'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                }`}
-                placeholder="Nhập tên ca sĩ"
-              />
-            </div>
-            {errors.artist && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.artist}</p>
-            )}
+            ))}
+            <button
+              type="button"
+              onClick={addAltNameField}
+              className="mt-1 text-sm text-primary hover:text-primary/80"
+            >
+              + Thêm tên thay thế
+            </button>
           </div>
 
-          <div>
-            <label
-              htmlFor="language"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
+          <div className="mb-4">
+            <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ngôn ngữ <span className="text-red-500">*</span>
             </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiFlag className="text-gray-400" />
-              </div>
-              <select
-                id="language"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
-                className="pl-10 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              >
-                <option value={Language.VIETNAMESE}>Tiếng Việt</option>
-                <option value={Language.ENGLISH}>Tiếng Anh</option>
-                <option value={Language.KOREAN}>Tiếng Hàn</option>
-                <option value={Language.JAPANESE}>Tiếng Nhật</option>
-                <option value={Language.CHINESE}>Tiếng Trung</option>
-                <option value={Language.ROMAJI}>Romaji</option>
-                <option value={Language.OTHER}>Khác</option>
-              </select>
-            </div>
+            <select
+              id="language"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              required
+            >
+              {Object.values(Language).map((lang) => {
+                if (isAddingNewLanguage && existingSong && existingSong.versions[lang]) {
+                  return null
+                }
+                let displayName = ''
+                switch (lang) {
+                  case Language.VIETNAMESE: displayName = 'Tiếng Việt'; break;
+                  case Language.ENGLISH: displayName = 'Tiếng Anh'; break;
+                  case Language.KOREAN: displayName = 'Tiếng Hàn'; break;
+                  case Language.JAPANESE: displayName = 'Tiếng Nhật'; break;
+                  case Language.CHINESE: displayName = 'Tiếng Trung'; break;
+                  case Language.ROMAJI: displayName = 'Tiếng Nhật (Romaji)'; break;
+                  case Language.OTHER: displayName = 'Khác'; break;
+                }
+                return (
+                  <option key={lang} value={lang}>
+                    {displayName}
+                  </option>
+                )
+              })}
+            </select>
           </div>
 
-          <div>
-            <label
-              htmlFor="lyrics"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
+          <div className="mb-4">
+            <label htmlFor="lyrics" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Lời bài hát <span className="text-red-500">*</span>
             </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute top-3 left-3 flex items-start pointer-events-none">
-                <FiType className="text-gray-400" />
-              </div>
-              <textarea
-                id="lyrics"
-                value={lyrics}
-                onChange={(e) => setLyrics(e.target.value)}
-                rows={15}
-                className={`pl-10 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm rounded-md ${
-                  errors.lyrics
-                    ? 'border-red-300 dark:border-red-700 text-red-900 dark:text-red-200 placeholder-red-300 dark:placeholder-red-700 bg-red-50 dark:bg-red-900/10'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                }`}
-                placeholder="Nhập lời bài hát"
-              />
-            </div>
-            {errors.lyrics && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.lyrics}</p>
-            )}
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Vui lòng nhập lời bài hát đầy đủ và chính xác. Mỗi câu nên được viết trên một dòng.
+            <textarea
+              id="lyrics"
+              value={lyrics}
+              onChange={(e) => setLyrics(e.target.value)}
+              rows={12}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              required
+            ></textarea>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Vui lòng kiểm tra lại chính tả trước khi gửi.
             </p>
           </div>
 
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
             >
-              {loading ? 'Đang xử lý...' : 'Gửi bài hát'}
+              {loading ? 'Đang xử lý...' : isAddingNewLanguage ? 'Thêm lời nhạc' : 'Thêm bài hát'}
             </button>
           </div>
         </form>
-      )}
+      </div>
     </div>
   )
 }

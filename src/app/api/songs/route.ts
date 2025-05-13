@@ -13,7 +13,7 @@ import { Timestamp } from 'firebase/firestore'
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
-    const limitParam = parseInt(searchParams.get('limit') || '10', 10)
+    const limitParam = parseInt(searchParams.get('limit') || '100', 10)
     const startAfterParam = searchParams.get('startAfter')
 
     const songsRef = collection(db, 'songs')
@@ -23,28 +23,31 @@ export async function GET(req: NextRequest) {
       const startAfterTimestamp = Timestamp.fromMillis(parseInt(startAfterParam, 10))
       q = query(
         songsRef,
-        orderBy('createdAt', 'desc'),
+        orderBy('info.createdAt', 'desc'),
         startAfter(startAfterTimestamp),
         limitFn(limitParam),
       )
     } else {
-      q = query(songsRef, orderBy('createdAt', 'desc'), limitFn(limitParam))
+      q = query(songsRef, orderBy('info.createdAt', 'desc'), limitFn(limitParam))
     }
 
     const snapshot = await getDocs(q)
 
     const songs = snapshot.docs.map((doc) => {
       const data = doc.data()
+      const createdAt = data.info?.createdAt || data.createdAt
+      const updatedAt = data.info?.updatedAt || data.updatedAt
+      
       return {
         id: doc.id,
         ...data,
         createdAt:
-          data.createdAt && typeof data.createdAt.toDate === 'function'
-            ? data.createdAt.toDate().toISOString()
+          createdAt && typeof createdAt.toDate === 'function'
+            ? createdAt.toDate().toISOString()
             : null,
         updatedAt:
-          data.updatedAt && typeof data.updatedAt.toDate === 'function'
-            ? data.updatedAt.toDate().toISOString()
+          updatedAt && typeof updatedAt.toDate === 'function'
+            ? updatedAt.toDate().toISOString()
             : null,
       }
     })
