@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/app/firebase/config'
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore'
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await req.json()
     const songId = (await params).id

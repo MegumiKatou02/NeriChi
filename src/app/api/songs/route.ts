@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       const data = doc.data()
       const createdAt = data.info?.createdAt || data.createdAt
       const updatedAt = data.info?.updatedAt || data.updatedAt
-      
+
       return {
         id: doc.id,
         ...data,

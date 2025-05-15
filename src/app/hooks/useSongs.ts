@@ -78,17 +78,20 @@ export function useSongs() {
   const createSong = useCallback(
     async (song: {
       info: {
-        title: string;
-        artist: string;
-        contributors?: string[];
-        approved?: boolean;
-        altNames?: string[];
-      };
-      versions?: Record<string, {
-        lyrics: string;
-        language: Language;
-        contributors?: string[];
-      }>;
+        title: string
+        artist: string
+        contributors?: string[]
+        approved?: boolean
+        altNames?: string[]
+      }
+      versions?: Record<
+        string,
+        {
+          lyrics: string
+          language: Language
+          contributors?: string[]
+        }
+      >
     }) => {
       if (!user) throw new Error('Bạn phải đăng nhập để thêm bài hát')
 
@@ -101,7 +104,7 @@ export function useSongs() {
         if (!song.info.contributors) {
           song.info.contributors = []
         }
-        
+
         song.info.contributors.push(user.uid)
 
         const response = await fetch('/api/pending-song', {

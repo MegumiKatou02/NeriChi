@@ -40,14 +40,14 @@ export default function SongDetail({ song }: SongDetailProps) {
   useEffect(() => {
     if (song.versions) {
       const availableLanguages = Object.keys(song.versions) as Language[]
-      
+
       let initialLanguage: Language | null = null
       if (availableLanguages.includes(Language.VIETNAMESE)) {
         initialLanguage = Language.VIETNAMESE
       } else if (availableLanguages.length > 0) {
         initialLanguage = availableLanguages[0]
       }
-      
+
       if (initialLanguage) {
         setSelectedLanguage(initialLanguage)
         setLyrics(song.versions[initialLanguage]?.lyrics || '')
@@ -63,8 +63,8 @@ export default function SongDetail({ song }: SongDetailProps) {
   const handleCopyLyrics = () => {
     if (lyrics) {
       navigator.clipboard.writeText(lyrics)
-    setIsCopied(true)
-    setTimeout(() => setIsCopied(false), 2000)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
     }
   }
 
@@ -270,12 +270,12 @@ export default function SongDetail({ song }: SongDetailProps) {
 
       <div className="px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center">
-            <div className="flex items-center">
+          <div className="flex items-center">
             <FiUsers className="mr-2 text-gray-500 dark:text-gray-400" />
             <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">Người đóng góp:</span>
             {selectedLanguage && song.versions[selectedLanguage]?.contributors ? (
-              <ContributorAvatars 
-                contributors={song.versions[selectedLanguage]?.contributors || []} 
+              <ContributorAvatars
+                contributors={song.versions[selectedLanguage]?.contributors || []}
                 size="sm"
                 maxDisplay={5}
               />
@@ -294,7 +294,10 @@ export default function SongDetail({ song }: SongDetailProps) {
         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           {selectedLanguage && song.versions[selectedLanguage]?.updatedAt && (
             <span>
-              Cập nhật: {formatDate(new Date(song.versions[selectedLanguage]?.updatedAt || song.info.updatedAt))}
+              Cập nhật:{' '}
+              {formatDate(
+                new Date(song.versions[selectedLanguage]?.updatedAt || song.info.updatedAt),
+              )}
             </span>
           )}
         </div>
@@ -320,8 +323,19 @@ export default function SongDetail({ song }: SongDetailProps) {
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-center flex-col text-center">
                     <div className="mx-auto flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-200 mb-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-8 w-8"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
                     <div className="mt-3 text-center">
@@ -333,11 +347,14 @@ export default function SongDetail({ song }: SongDetailProps) {
                       </h3>
                       <div className="mt-4 mb-4">
                         <p className="text-base text-gray-600 dark:text-gray-300">
-                          Chúng tôi đã nhận được báo cáo của bạn về bài hát <span className="font-medium">{song.info.title}</span> và sẽ xem xét nó sớm nhất có thể.
+                          Chúng tôi đã nhận được báo cáo của bạn về bài hát{' '}
+                          <span className="font-medium">{song.info.title}</span> và sẽ xem xét nó
+                          sớm nhất có thể.
                         </p>
                       </div>
                       <div className="mt-5 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-md text-blue-800 dark:text-blue-200 text-sm mb-5">
-                        Nếu báo cáo của bạn được chấp nhận, bạn sẽ được thêm vào danh sách người đóng góp cho bài hát này.
+                        Nếu báo cáo của bạn được chấp nhận, bạn sẽ được thêm vào danh sách người
+                        đóng góp cho bài hát này.
                       </div>
                       <button
                         onClick={handleCloseReportModal}
@@ -350,91 +367,99 @@ export default function SongDetail({ song }: SongDetailProps) {
                 </div>
               ) : (
                 <form onSubmit={handleSubmitReport} className="mt-5">
-                      <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-6">
-                        <div className="sm:flex sm:items-start">
-                          <div className="w-full text-center sm:mt-0 sm:text-left">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4" id="modal-headline">
-                              Báo cáo lỗi lời bài hát
-                            </h3>
-                            
-                            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-md text-blue-800 dark:text-blue-200 text-sm">
-                              <p>Bạn đang báo cáo lời bài hát <strong>{song.info.title}</strong> - <strong>{selectedLanguage && languageDisplay[selectedLanguage]}</strong></p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="px-4 sm:px-6 pb-4">
-                        <div className="mb-5">
-                          <label
-                            htmlFor="reportReason"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                          >
-                            Lý do báo cáo <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            id="reportReason"
-                            value={reportReason}
-                            onChange={(e) => setReportReason(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-                            required
-                          >
-                            <option value="">-- Chọn lý do --</option>
-                            <option value="wrong_lyrics">Lời không chính xác</option>
-                            <option value="missing_lyrics">Thiếu một phần lời</option>
-                            <option value="wrong_punctuation">Lỗi chính tả/dấu câu</option>
-                            <option value="wrong_formatting">Lỗi định dạng</option>
-                            <option value="other">Lý do khác</option>
-                          </select>
-                        </div>
-                        <div className="mb-5">
-                          <label
-                            htmlFor="reportDetails"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                          >
-                            Chi tiết lỗi <span className="text-gray-500 text-xs">(khuyến khích)</span>
-                          </label>
-                          <textarea
-                            id="reportDetails"
-                            value={reportDetails}
-                            onChange={(e) => setReportDetails(e.target.value)}
-                            rows={5}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-                            placeholder={`Hãy mô tả chi tiết về lỗi bạn tìm thấy trong phiên bản ${selectedLanguage ? languageDisplay[selectedLanguage] : ''} của bài hát.\n\nNhớ nhắn kèm theo đang báo cáo ở ngôn ngữ nào`}
-                          ></textarea>
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-5 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                          <p className="font-medium mb-1">Thông tin báo cáo:</p>
-                          <ul className="list-disc pl-5 space-y-1">
-                            <li>Báo cáo của bạn sẽ được gửi đến đội ngũ quản trị viên</li>
-                            <li>Chúng tôi sẽ xem xét và cập nhật lời bài hát nếu phù hợp</li>
-                            <li>Bạn sẽ được thêm vào danh sách người đóng góp nếu báo cáo được chấp nhận</li>
-                          </ul>
-                        </div>
+                  <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-6">
+                    <div className="sm:flex sm:items-start">
+                      <div className="w-full text-center sm:mt-0 sm:text-left">
+                        <h3
+                          className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4"
+                          id="modal-headline"
+                        >
+                          Báo cáo lỗi lời bài hát
+                        </h3>
 
-                        <div className="flex justify-end space-x-3">
-                          <button
-                            type="button"
-                            onClick={handleCloseReportModal}
-                            className="py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                          >
-                            Hủy
-                          </button>
-                          <button
-                            type="submit"
-                            disabled={isSubmittingReport || !reportReason}
-                            className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                              isSubmittingReport || !reportReason
-                                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-                                : 'bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
-                            }`}
-                          >
-                            {isSubmittingReport ? 'Đang gửi...' : 'Gửi báo cáo'}
-                          </button>
+                        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-md text-blue-800 dark:text-blue-200 text-sm">
+                          <p>
+                            Bạn đang báo cáo lời bài hát <strong>{song.info.title}</strong> -{' '}
+                            <strong>{selectedLanguage && languageDisplay[selectedLanguage]}</strong>
+                          </p>
                         </div>
                       </div>
-                    </form>
-                )}
+                    </div>
+                  </div>
+
+                  <div className="px-4 sm:px-6 pb-4">
+                    <div className="mb-5">
+                      <label
+                        htmlFor="reportReason"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                      >
+                        Lý do báo cáo <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="reportReason"
+                        value={reportReason}
+                        onChange={(e) => setReportReason(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                        required
+                      >
+                        <option value="">-- Chọn lý do --</option>
+                        <option value="wrong_lyrics">Lời không chính xác</option>
+                        <option value="missing_lyrics">Thiếu một phần lời</option>
+                        <option value="wrong_punctuation">Lỗi chính tả/dấu câu</option>
+                        <option value="wrong_formatting">Lỗi định dạng</option>
+                        <option value="other">Lý do khác</option>
+                      </select>
+                    </div>
+                    <div className="mb-5">
+                      <label
+                        htmlFor="reportDetails"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                      >
+                        Chi tiết lỗi <span className="text-gray-500 text-xs">(khuyến khích)</span>
+                      </label>
+                      <textarea
+                        id="reportDetails"
+                        value={reportDetails}
+                        onChange={(e) => setReportDetails(e.target.value)}
+                        rows={5}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                        placeholder={`Hãy mô tả chi tiết về lỗi bạn tìm thấy trong phiên bản ${selectedLanguage ? languageDisplay[selectedLanguage] : ''} của bài hát.\n\nNhớ nhắn kèm theo đang báo cáo ở ngôn ngữ nào`}
+                      ></textarea>
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-5 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                      <p className="font-medium mb-1">Thông tin báo cáo:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Báo cáo của bạn sẽ được gửi đến đội ngũ quản trị viên</li>
+                        <li>Chúng tôi sẽ xem xét và cập nhật lời bài hát nếu phù hợp</li>
+                        <li>
+                          Bạn sẽ được thêm vào danh sách người đóng góp nếu báo cáo được chấp nhận
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={handleCloseReportModal}
+                        className="py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingReport || !reportReason}
+                        className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                          isSubmittingReport || !reportReason
+                            ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                            : 'bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
+                        }`}
+                      >
+                        {isSubmittingReport ? 'Đang gửi...' : 'Gửi báo cáo'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>

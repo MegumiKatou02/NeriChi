@@ -31,15 +31,15 @@ export default function AddSongForm() {
           const song = await getSongById(songId)
           if (song) {
             setExistingSong(song)
-            
+
             setTitle(song.info.title)
             setArtist(song.info.artist)
-            
+
             const availableLanguages = Object.keys(song.versions) as Language[]
             const missingLanguages = Object.values(Language).filter(
-              lang => !availableLanguages.includes(lang)
+              (lang) => !availableLanguages.includes(lang),
             )
-            
+
             if (missingLanguages.length > 0) {
               setLanguage(missingLanguages[0])
             }
@@ -52,7 +52,7 @@ export default function AddSongForm() {
         }
       }
     }
-    
+
     fetchSongDetails()
   }, [songId])
 
@@ -74,7 +74,7 @@ export default function AddSongForm() {
 
     try {
       if (isAddingNewLanguage && existingSong) {
-        const filteredAltNames = altNames.filter(name => name.trim() !== '')
+        const filteredAltNames = altNames.filter((name) => name.trim() !== '')
 
         const songData = {
           info: {
@@ -93,11 +93,11 @@ export default function AddSongForm() {
               contributors: [user.uid],
               createdAt: new Date(),
               updatedAt: new Date(),
-            }
-          }
+            },
+          },
         }
 
-        const apiUrl = `/api/pending-song?originalSongId=${songId}`;
+        const apiUrl = `/api/pending-song?originalSongId=${songId}`
 
         await fetch(apiUrl, {
           method: 'POST',
@@ -105,11 +105,11 @@ export default function AddSongForm() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(songData),
-        });
+        })
       } else {
         const songData = {
           info: {
-            altNames: altNames.filter(name => name.trim() !== ''),
+            altNames: altNames.filter((name) => name.trim() !== ''),
             title: title.trim(),
             artist: artist.trim(),
             approved: false,
@@ -124,13 +124,11 @@ export default function AddSongForm() {
               contributors: [user.uid],
               createdAt: new Date(),
               updatedAt: new Date(),
-            }
-          }
+            },
+          },
         }
 
-        const apiUrl = songId 
-          ? `/api/pending-song?originalSongId=${songId}`
-          : '/api/pending-song';
+        const apiUrl = songId ? `/api/pending-song?originalSongId=${songId}` : '/api/pending-song'
 
         await fetch(apiUrl, {
           method: 'POST',
@@ -138,9 +136,9 @@ export default function AddSongForm() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(songData),
-        });
+        })
       }
-      
+
       setSuccess(true)
       setTitle('')
       setArtist('')
@@ -177,7 +175,9 @@ export default function AddSongForm() {
       <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
         <div className="text-center">
           <FiCheckCircle className="mx-auto h-12 w-12 text-green-500" />
-          <h2 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">Thêm bài hát thành công!</h2>
+          <h2 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">
+            Thêm bài hát thành công!
+          </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Cảm ơn bạn đã đóng góp. Bài hát của bạn đang chờ phê duyệt.
           </p>
@@ -215,7 +215,10 @@ export default function AddSongForm() {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Tên bài hát <span className="text-red-500">*</span>
             </label>
             <input
@@ -230,7 +233,10 @@ export default function AddSongForm() {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="artist" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="artist"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Ca sĩ / Nghệ sĩ <span className="text-red-500">*</span>
             </label>
             <input
@@ -277,7 +283,10 @@ export default function AddSongForm() {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="language"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Ngôn ngữ <span className="text-red-500">*</span>
             </label>
             <select
@@ -293,13 +302,27 @@ export default function AddSongForm() {
                 }
                 let displayName = ''
                 switch (lang) {
-                  case Language.VIETNAMESE: displayName = 'Tiếng Việt'; break;
-                  case Language.ENGLISH: displayName = 'Tiếng Anh'; break;
-                  case Language.KOREAN: displayName = 'Tiếng Hàn'; break;
-                  case Language.JAPANESE: displayName = 'Tiếng Nhật'; break;
-                  case Language.CHINESE: displayName = 'Tiếng Trung'; break;
-                  case Language.ROMAJI: displayName = 'Tiếng Nhật (Romaji)'; break;
-                  case Language.OTHER: displayName = 'Khác'; break;
+                  case Language.VIETNAMESE:
+                    displayName = 'Tiếng Việt'
+                    break
+                  case Language.ENGLISH:
+                    displayName = 'Tiếng Anh'
+                    break
+                  case Language.KOREAN:
+                    displayName = 'Tiếng Hàn'
+                    break
+                  case Language.JAPANESE:
+                    displayName = 'Tiếng Nhật'
+                    break
+                  case Language.CHINESE:
+                    displayName = 'Tiếng Trung'
+                    break
+                  case Language.ROMAJI:
+                    displayName = 'Tiếng Nhật (Romaji)'
+                    break
+                  case Language.OTHER:
+                    displayName = 'Khác'
+                    break
                 }
                 return (
                   <option key={lang} value={lang}>
@@ -311,7 +334,10 @@ export default function AddSongForm() {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="lyrics" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="lyrics"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Lời bài hát <span className="text-red-500">*</span>
             </label>
             <textarea

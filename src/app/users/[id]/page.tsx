@@ -8,8 +8,10 @@ import Image from 'next/image'
 import { FiCalendar, FiUser } from 'react-icons/fi'
 import Link from 'next/link'
 
-export async function generateMetadata(context: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await context.params;
+export async function generateMetadata(context: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await context.params
 
   if (!id) notFound()
 

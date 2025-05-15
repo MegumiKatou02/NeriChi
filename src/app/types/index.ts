@@ -17,12 +17,12 @@ export interface SongInfo {
   likes: number
   approved: boolean
   contributors: string[]
-   language: string;
+  language: string
 }
 
 export interface SongVersion {
   lyrics: string
-  language?: string 
+  language?: string
   contributors: string[]
   createdAt: Date
   updatedAt: Date

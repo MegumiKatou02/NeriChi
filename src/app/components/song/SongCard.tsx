@@ -40,7 +40,9 @@ export default function SongCard({ song }: SongCardProps) {
       if (languages.length > 0) {
         const firstLang = languages[0]
         if (languages.length > 1) {
-          setDisplayLanguage(`${firstLang.charAt(0).toUpperCase() + firstLang.slice(1)} +${languages.length - 1}`)
+          setDisplayLanguage(
+            `${firstLang.charAt(0).toUpperCase() + firstLang.slice(1)} +${languages.length - 1}`,
+          )
         } else {
           setDisplayLanguage(firstLang.charAt(0).toUpperCase() + firstLang.slice(1))
         }
@@ -124,7 +126,11 @@ export default function SongCard({ song }: SongCardProps) {
             <div className="mt-4 ml-16">
               <div className="flex justify-between items-center">
                 <div className="text-xs text-muted-foreground">Người đóng góp:</div>
-                <ContributorAvatars contributors={song.info.contributors} size="sm" maxDisplay={4} />
+                <ContributorAvatars
+                  contributors={song.info.contributors}
+                  size="sm"
+                  maxDisplay={4}
+                />
               </div>
             </div>
           )}
@@ -138,9 +144,9 @@ export default function SongCard({ song }: SongCardProps) {
             </div>
             <div className="flex items-center">
               {displayLanguage && (
-              <span className="px-2 py-0.5 bg-secondary rounded-full text-xs">
+                <span className="px-2 py-0.5 bg-secondary rounded-full text-xs">
                   {displayLanguage}
-              </span>
+                </span>
               )}
             </div>
           </div>
@@ -153,10 +159,12 @@ export default function SongCard({ song }: SongCardProps) {
               title={isFavorite ? 'Hủy lưu bài hát' : 'Lưu bài hát'}
             >
               <div className="flex items-center">
-              <span className="mr-1 text-sm font-medium text-gray-500 dark:text-gray-300">{song.info.likes ?? 0}</span>
-              <FiHeart
-                className={`w-5 h-5 ${isSaving ? 'animate-pulse' : ''} ${isFavorite ? 'text-red-500 fill-red-500' : ''}`}
-              />
+                <span className="mr-1 text-sm font-medium text-gray-500 dark:text-gray-300">
+                  {song.info.likes ?? 0}
+                </span>
+                <FiHeart
+                  className={`w-5 h-5 ${isSaving ? 'animate-pulse' : ''} ${isFavorite ? 'text-red-500 fill-red-500' : ''}`}
+                />
               </div>
             </button>
 

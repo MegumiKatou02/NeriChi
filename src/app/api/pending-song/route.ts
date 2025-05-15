@@ -5,30 +5,30 @@ import { FieldValue } from 'firebase/firestore'
 
 export async function POST(req: NextRequest) {
   const songData = await req.json()
-  
+
   const originalSongId = req.nextUrl.searchParams.get('originalSongId') || null
 
   songData.info = {
     ...songData.info,
     createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   }
 
   if (songData.versions) {
-     interface SongVersion {
-        lyrics: string
-        language?: string 
-        contributors: string[]
-        createdAt: Date | FieldValue
-        updatedAt: Date | FieldValue
-      }
+    interface SongVersion {
+      lyrics: string
+      language?: string
+      contributors: string[]
+      createdAt: Date | FieldValue
+      updatedAt: Date | FieldValue
+    }
 
-    (Object.values(songData.versions) as SongVersion[]).forEach((version) => {
+    ;(Object.values(songData.versions) as SongVersion[]).forEach((version) => {
       if (version) {
-        version.createdAt = serverTimestamp();
-        version.updatedAt = serverTimestamp();
+        version.createdAt = serverTimestamp()
+        version.updatedAt = serverTimestamp()
       }
-    });
+    })
   }
 
   const docRef = await addDoc(collection(db, 'pendingSongs'), {
@@ -47,7 +47,7 @@ export async function GET() {
 
     if (data.info.createdAt && typeof data.info.createdAt.toDate === 'function') {
       data.info.createdAt = data.info.createdAt.toDate()
-    } 
+    }
 
     if (data.info.updatedAt && typeof data.info.updatedAt.toDate === 'function') {
       data.info.updatedAt = data.info.updatedAt.toDate()

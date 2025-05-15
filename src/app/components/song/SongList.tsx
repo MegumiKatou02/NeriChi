@@ -32,10 +32,8 @@ export default function SongList({
   useEffect(() => {
     if (!initialSongs) {
       fetchSongs()
-      
     } else {
       setDisplaySongs(initialSongs)
-      
     }
   }, [initialSongs, fetchSongs])
 
@@ -48,7 +46,9 @@ export default function SongList({
       }
 
       if (sortBy === 'newest') {
-        filtered.sort((a, b) => (b.info.createdAt?.getTime() || 0) - (a.info.createdAt?.getTime() || 0))
+        filtered.sort(
+          (a, b) => (b.info.createdAt?.getTime() || 0) - (a.info.createdAt?.getTime() || 0),
+        )
       } else if (sortBy === 'popular') {
         filtered.sort((a, b) => b.info.views - a.info.views)
       }

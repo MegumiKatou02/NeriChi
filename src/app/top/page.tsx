@@ -7,14 +7,14 @@ import Link from 'next/link'
 import { FiEye, FiHeart, FiCalendar, FiMusic, FiBarChart, FiTrendingUp } from 'react-icons/fi'
 
 type SongWithInfo = {
-  id: string;
+  id: string
   info: {
-    title: string;
-    artist: string;
-    createdAt: Date | null;
-    views: number;
-  };
-};
+    title: string
+    artist: string
+    createdAt: Date | null
+    views: number
+  }
+}
 
 export default function TopPage() {
   const { fetchTopSongs, loading } = useSongs()
@@ -39,7 +39,7 @@ export default function TopPage() {
   }, [fetchTopSongs])
 
   const formatDate = (date: Date | null) => {
-    if (!date) return 'Không có ngày';
+    if (!date) return 'Không có ngày'
     return new Intl.DateTimeFormat('vi-VN', {
       year: 'numeric',
       month: 'long',
