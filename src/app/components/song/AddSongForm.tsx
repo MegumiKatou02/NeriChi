@@ -6,7 +6,6 @@ import { Language, Song } from '../../types'
 import { useAuth } from '../../hooks/useAuth'
 import { FiMusic, FiCheckCircle, FiAlertCircle } from 'react-icons/fi'
 import { getSongById } from '../../firebase/services'
-import { auth } from '../../firebase/config'
 
 export default function AddSongForm() {
   const { user } = useAuth()
@@ -77,60 +76,36 @@ export default function AddSongForm() {
       if (isAddingNewLanguage && existingSong) {
         const filteredAltNames = altNames.filter(name => name.trim() !== '')
 
-        const updatedSong = {
-          ...existingSong,
+        const songData = {
+          info: {
+            altNames: [...(existingSong.info.altNames || []), ...filteredAltNames],
+            title: title.trim(),
+            artist: artist.trim(),
+            approved: false,
+            contributors: [user.uid],
+            views: 0,
+            likes: 0,
+          },
           versions: {
-            ...existingSong.versions,
             [language]: {
               lyrics: lyrics.trim(),
-              contributors: [user.uid],
               language: language,
+              contributors: [user.uid],
               createdAt: new Date(),
               updatedAt: new Date(),
             }
-          },
-          info: {
-            ...existingSong.info,
-            altNames: [...(existingSong.info.altNames || []), ...filteredAltNames]
-          },
-          originalSongId: songId
-        }
-
-        const token = await auth.currentUser?.getIdToken();
-          
-        let attempts = 0;
-        let success = false;
-        let error = null;
-        
-        while (attempts < 3 && !success) {
-          try {
-            const response = await fetch(`/api/update-song/${songId}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(updatedSong),
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            success = true;
-          } catch (err) {
-            attempts++;
-            error = err;
-            console.error(`Lỗi lần thử ${attempts}:`, err);
-            if (attempts < 3) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
           }
         }
-        
-        if (!success) {
-          throw error || new Error('Lỗi khi cập nhật bài hát');
-        }
+
+        const apiUrl = `/api/pending-song?originalSongId=${songId}`;
+
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(songData),
+        });
       } else {
         const songData = {
           info: {

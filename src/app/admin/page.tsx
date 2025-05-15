@@ -604,7 +604,61 @@ export default function AdminPage() {
                 </p>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div>
+              <label className="block mb-1 font-medium">Đổi ngôn ngữ</label>
+              <div className="flex items-end gap-2">
+                <div className="w-full sm:w-1/2">
+                  <select
+                    name="languageChange"
+                    value={activeLanguageTab}
+                    onChange={e => {
+                      const newLang = e.target.value as Language;
+                      if (activeLanguageTab !== newLang) {
+                        if (editingSong.versions[newLang]) {
+                          if (window.confirm(`Ngôn ngữ ${getLangDisplayName(newLang)} đã tồn tại. Bạn có muốn ghi đè không?`)) {
+                            const updatedVersions = { ...editingSong.versions };
+                            updatedVersions[newLang] = {
+                              ...updatedVersions[activeLanguageTab],
+                              lyrics: updatedVersions[activeLanguageTab]?.lyrics || '',
+                              contributors: updatedVersions[activeLanguageTab]?.contributors || [],
+                              createdAt: new Date(),
+                              updatedAt: new Date()
+                            };
+                            delete updatedVersions[activeLanguageTab];
+                            
+                            setEditingSong({
+                              ...editingSong,
+                              versions: updatedVersions
+                            });
+                            setActiveLanguageTab(newLang);
+                          }
+                        } else {
+                          const updatedVersions = { ...editingSong.versions };
+                          updatedVersions[newLang] = updatedVersions[activeLanguageTab];
+                          delete updatedVersions[activeLanguageTab];
+                          
+                          setEditingSong({
+                            ...editingSong,
+                            versions: updatedVersions,
+                          });
+                          setActiveLanguageTab(newLang);
+                        }
+                      }
+                    }}
+                    className="w-full border rounded p-2"
+                  >
+                    {Object.values(Language).map(lang => (
+                      <option key={lang} value={lang}>{getLangDisplayName(lang)}</option>
+                    ))}
+                  </select>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Thay đổi ngôn ngữ cho phiên bản lyrics này
+                </p>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block mb-1 font-medium">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore'
 import { db } from '@/app/firebase/config'
+import { FieldValue } from 'firebase/firestore'
 
 export async function POST(req: NextRequest) {
   const songData = await req.json()
@@ -11,6 +12,23 @@ export async function POST(req: NextRequest) {
     ...songData.info,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
+  }
+
+  if (songData.versions) {
+     interface SongVersion {
+        lyrics: string
+        language?: string 
+        contributors: string[]
+        createdAt: Date | FieldValue
+        updatedAt: Date | FieldValue
+      }
+
+    (Object.values(songData.versions) as SongVersion[]).forEach((version) => {
+      if (version) {
+        version.createdAt = serverTimestamp();
+        version.updatedAt = serverTimestamp();
+      }
+    });
   }
 
   const docRef = await addDoc(collection(db, 'pendingSongs'), {
