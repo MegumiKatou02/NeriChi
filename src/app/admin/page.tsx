@@ -970,13 +970,15 @@ export default function AdminPage() {
                       <td className="py-2 px-3 border-b flex items-center gap-2">
                         <span>{song.info?.title}</span>
                         {song && song.id && (
-                          <button
-                            onClick={() => router.push(`/songs/${song.id}`)}
+                          <a
+                            // onClick={() => router.push(`/songs/${song.id}`)}
                             className="p-1 text-gray-500 hover:text-primary"
                             title="Xem bài hát"
+                            href={`/songs/${song.id}`}
+                            target="_blank"
                           >
                             <Eye size={16} />
-                          </button>
+                          </a>
                         )}
                       </td>
                       <td className="py-2 px-3 border-b">{song.info?.artist}</td>
@@ -1124,13 +1126,15 @@ export default function AdminPage() {
                               </div>
                             </div>
                             {song && song.id && (
-                              <button
-                                onClick={() => router.push(`/songs/${song.id}`)}
+                              <a
+                                // onClick={() => router.push(`/songs/${song.id}`)}
                                 className="p-1 text-gray-500 hover:text-primary"
                                 title="Xem bài hát"
+                                href={`/songs/${song.id}`}
+                                target="_blank"
                               >
                                 <Eye size={16} />
-                              </button>
+                              </a>
                             )}
                           </div>
                         ) : (
